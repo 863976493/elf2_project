@@ -1,0 +1,16 @@
+strawberry_inference_node:
+  ros__parameters:
+    rknn_scripts_dir: "/root/deploy_elf2_maturity/scripts"
+    disease_model_path: "/root/strawberry_models/Disease/best_int8.rknn"
+    disease_class_names_path: "/root/strawberry_models/Disease/disease_classes.json"
+    disease_enabled: true
+    disease_required: false
+    maturity_model_path: "/root/strawberry_models/Maturity/best_fp16.rknn"
+    maturity_class_names_path: ""
+    maturity_enabled: true
+    maturity_required: true
+    confidence_threshold: 0.25
+    nms_iou: 0.45
+    score_sum_factor: 0.5
+    rknn_core: -1
+    service_name: "/infer_strawberry_image"

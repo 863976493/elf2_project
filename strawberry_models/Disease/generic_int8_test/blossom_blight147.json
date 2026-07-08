@@ -1,0 +1,28 @@
+{
+  "image": "blossom_blight147.jpg",
+  "elapsed_ms": 26.44,
+  "boxes": [
+    {
+      "xyxy": [
+        112.583,
+        206.677,
+        165.607,
+        289.501
+      ],
+      "confidence": 0.952814,
+      "class_id": 2,
+      "class_name": "Blossom Blight"
+    },
+    {
+      "xyxy": [
+        206.856,
+        165.384,
+        258.528,
+        247.02
+      ],
+      "confidence": 0.929855,
+      "class_id": 2,
+      "class_name": "Blossom Blight"
+    }
+  ]
+}

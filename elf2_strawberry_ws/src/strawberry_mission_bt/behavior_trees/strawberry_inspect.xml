@@ -1,0 +1,13 @@
+<root BTCPP_format="4">
+  <BehaviorTree ID="StrawberryInspect">
+    <Sequence name="inspect_region">
+      <LoadRegionPose region="{region}" pose="{goal_pose}" />
+      <NavigateToPose pose="{goal_pose}" />
+      <StopRobot />
+      <TrackStrawberry target_distance="0.35" image_path="{image_path}" />
+      <InferStrawberryImage image_path="{image_path}" region="{region}" result="{result_json}" />
+      <SaveInspectionResult result="{result_json}" />
+      <UploadResult result="{result_json}" />
+    </Sequence>
+  </BehaviorTree>
+</root>

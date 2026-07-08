@@ -1,0 +1,9 @@
+# Request
+string image_path
+string task_id
+string region
+---
+# Response
+bool success
+string message
+string result_json

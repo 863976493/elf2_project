@@ -1,0 +1,50 @@
+{
+  "image": "leaf_spot1.jpg",
+  "elapsed_ms": 26.059,
+  "boxes": [
+    {
+      "xyxy": [
+        223.22,
+        164.516,
+        380.741,
+        418.0
+      ],
+      "confidence": 0.968798,
+      "class_id": 4,
+      "class_name": "Leaf Spot"
+    },
+    {
+      "xyxy": [
+        89.453,
+        144.109,
+        230.463,
+        406.312
+      ],
+      "confidence": 0.953358,
+      "class_id": 4,
+      "class_name": "Leaf Spot"
+    },
+    {
+      "xyxy": [
+        153.526,
+        1.233,
+        285.773,
+        315.142
+      ],
+      "confidence": 0.937919,
+      "class_id": 4,
+      "class_name": "Leaf Spot"
+    },
+    {
+      "xyxy": [
+        116.54,
+        0.0,
+        174.162,
+        110.002
+      ],
+      "confidence": 0.845285,
+      "class_id": 4,
+      "class_name": "Leaf Spot"
+    }
+  ]
+}

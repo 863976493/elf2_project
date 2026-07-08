@@ -1,0 +1,66 @@
+﻿####################
+#common setting
+#閫氱敤璁剧疆椤?
+####################
+ALIYUN_API_KEY: 'YOUR_ALIYUN_API_KEY'                    #闃块噷浜慉PI_KEY
+LANGUAGE: 'en'                                                           #璇█ zh:涓枃 en:鑻辨枃
+DEBUG_MODE: False                                                         #璋冭瘯妯″紡
+
+####################
+#   dify setting
+#    dify閰嶇疆閫夐」
+####################
+DIFY_BASE_URL: "http://192.168.2.25/v1"                        #"http://localhost/v1"
+DIFY_API_KEY: "YOUR_DIFY_API_KEY"                #dify鍐崇瓥澶фā鍨嬪簲鐢ˋPI_KEY
+
+####################
+#ASR function setting
+#璇煶璇嗗埆鍔熻兘璁剧疆
+####################
+USE_OLINE_ASR : True                                  #鏄惁浣跨敤鍦ㄧ嚎ASR
+ASR_SUPPLIER  : 'xunfei'                              #ASR渚涘簲鍟?浠呭綋浣跨敤鍦ㄧ嚎ASR鏃剁敓鏁?: 涓浗澶ч檰鍦板尯锛歛liyun 鍥介檯鍦板尯锛歺unfei
+OLINE_ASR_MODEL : 'paraformer-realtime-v2'
+ASR_THREASHOLD : 3                                    #ASR璇嗗埆缁撴灉闃堝€硷紝浣庝簬璇ラ槇鍊煎垯涓嶈繘琛屽悗缁鐞嗭紝鍗曚綅锛氬瓧绗?
+WAKEUP_THREASHOLD : 5.0                               #鍞ら啋鏃堕棿闃堝€硷紝闃叉WAKEUP_THREASHOLD鏃堕棿鍐呰澶氭鍞ら啋锛屽崟浣嶏細绉?
+VAD_MODE: 2                                           #vad鐏垫晱搴︼紝浣跨敤棰戠巼杈冨皯锛屽彲浠ュ厛璋冩暣楹﹀厠椋庣伒鏁忓害纭欢鐏垫晱搴? VAD sensitivity
+MAX_SILENCE_FRAMES: 90                                #灏鹃煶鏃堕暱妫€娴嬶紝鍗曚綅锛氬抚鏁帮紝1甯?30姣           
+
+####################
+#TTS function setting
+#璇煶鍚堟垚鍔熻兘璁剧疆
+####################
+USE_OLINE_TTS : True                                                            #鏄惁浣跨敤鍦ㄧ嚎TTS
+TTS_SUPPLIER  : 'xunfei'                                                        #TTS渚涘簲鍟?浠呭綋浣跨敤鍦ㄧ嚎TTS鏃剁敓鏁?: 涓浗澶ч檰鍦板尯锛歛liyun 鍥介檯鍦板尯锛歺unfei
+#----------------------------------------鐧惧害浜戣闊冲悎鎴愯缃?--------------------------------------------------
+BAIDU_API_KEY : 'lQ3ybx9UsPMCvpqZKpgxxxxx'                                      #鐧惧害骞冲彴璇煶鍚堟垚API_KEY
+BAIDU_SECRET_KEY : 'KBT3iWvMu1QXUVUL0CeNrKDhc1xxxx'                           #鐧惧害骞冲彴璇煶鍚堟垚SECRET_KEY
+PER : 4                                                                         # 鍙戦煶浜洪€夋嫨, 鍩虹闊冲簱锛?涓哄害灏忕編锛?涓哄害灏忓畤锛?涓哄害閫嶉仴锛?涓哄害涓斧锛岀簿鍝侀煶搴擄細5涓哄害灏忓▏锛?03涓哄害绫虫湹锛?06涓哄害鍗氭枃锛?10涓哄害灏忕锛?11涓哄害灏忚悓锛岄粯璁や负搴﹀皬缇?
+SPD : 5                                                                         # 璇€燂紝鍙栧€?-15锛岄粯璁や负5涓閫?
+PIT : 5                                                                         # 闊宠皟锛屽彇鍊?-15锛岄粯璁や负5涓璋?
+VOL : 5                                                                         # 闊抽噺锛屽彇鍊?-9锛岄粯璁や负5涓煶閲?
+CUID : 'IN7dAbz1thDJKVhLdypkpB6sDVG86xeG'                                       # 璁惧鏍囪瘑锛岃幏鍙栧湴鍧€锛歨ttps://console.bce.baidu.com/support/?u=aiconsole&timestamp=1749002896844#/api?product=AI&project=%E8%AF%AD%E9%9F%B3%E6%8A%80%E6%9C%AF&parent=%E8%AF%AD%E9%9F%B3%E5%90%88%E6%88%90&api=text2audio&method=post
+
+#----------------------------------------閫氫箟璇煶鍚堟垚璁剧疆---------------------------------------------------
+TONGYI_TTS_MODEL : "cosyvoice-v2"                                               #璇煶妯″瀷
+VOICE_TONE : "longwan_v2"                                                       #鍙戦煶浜? 鍏蜂綋鍙弬鑰冨畼缃戞枃妗?
+
+
+
+
+
+
+####################
+#system setting
+#绯荤粺閰嶇疆椤癸紙璋ㄦ厧淇敼锛?
+####################
+#----------------------------------------SYSTEMS------------------------------------------------------
+SAMPLE_RATE: 16000                            #asr褰曢煶闊抽閲囨牱鐜?# ASR recording audio sample rate
+FRAME_MS: 30                                  #vad甯уぇ灏忓崟浣峬s # VAD frame size in milliseconds 
+MIC_SERIAL_PORT : "/dev/mic"                  #楹﹀厠椋庝覆鍙ｅ埆鍚?# Microphone serial port alias
+MIC_INDEX: 0                                  #楹﹀厠椋庣储寮?# Microphone index
+
+XUNFEI_KEY: 'M3Pro_ws/multi_brains_file/KEY/.key/secret.key'
+XUNFEI_ENCRYPTED : 'M3Pro_ws/multi_brains_file/KEY/encrypted_config.bin'
+
+
+

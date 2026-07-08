@@ -1,0 +1,19 @@
+regions:
+  A:
+    frame_id: map
+    x: 1.904
+    y: -1.714
+    yaw: 0.229
+  B:
+    frame_id: map
+    x: 0.428
+    y: -1.628
+    yaw: -1.525
+
+tracking:
+  target_distance: 0.52
+  timeout_sec: 60.0
+  max_attempts: 1
+
+results:
+  root_dir: /root/strawberry_inspection/results

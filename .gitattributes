@@ -1,0 +1,10 @@
+﻿* text=auto
+*.rknn binary
+*.onnx binary
+*.pt binary
+*.stl binary
+*.STL binary
+*.so binary
+*.png binary
+*.jpg binary
+*.jpeg binary

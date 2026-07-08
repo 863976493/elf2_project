@@ -1,0 +1,17 @@
+{
+  "image": "angular_leafspot351.jpg",
+  "elapsed_ms": 31.635,
+  "boxes": [
+    {
+      "xyxy": [
+        0.244,
+        0.746,
+        418.0,
+        418.0
+      ],
+      "confidence": 0.92248,
+      "class_id": 0,
+      "class_name": "Angular Leafspot"
+    }
+  ]
+}

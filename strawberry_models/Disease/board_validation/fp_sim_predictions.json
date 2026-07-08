@@ -1,0 +1,202 @@
+[
+  {
+    "image": "02_samples/images/angular_leafspot351.jpg",
+    "boxes": [
+      {
+        "class_id": 0,
+        "class_name": "Angular Leafspot",
+        "confidence": 0.89599609375,
+        "bbox_xyxy": [
+          0.32712519501195486,
+          0.7893342622204728,
+          419.0,
+          419.0
+        ]
+      }
+    ]
+  },
+  {
+    "image": "02_samples/images/anthracnose_fruit_rot83.jpg",
+    "boxes": [
+      {
+        "class_id": 1,
+        "class_name": "Anthracnose Fruit Rot",
+        "confidence": 0.96728515625,
+        "bbox_xyxy": [
+          153.72737563660755,
+          167.60697028285654,
+          260.328635175175,
+          324.13539043586206
+        ]
+      }
+    ]
+  },
+  {
+    "image": "02_samples/images/blossom_blight147.jpg",
+    "boxes": [
+      {
+        "class_id": 2,
+        "class_name": "Blossom Blight",
+        "confidence": 0.9560546875,
+        "bbox_xyxy": [
+          112.72523332421235,
+          206.6602198842521,
+          165.79531523448654,
+          289.5329237995523
+        ]
+      },
+      {
+        "class_id": 2,
+        "class_name": "Blossom Blight",
+        "confidence": 0.93310546875,
+        "bbox_xyxy": [
+          206.84198952379379,
+          165.17582540922896,
+          258.49620519159765,
+          247.11585610689815
+        ]
+      }
+    ]
+  },
+  {
+    "image": "02_samples/images/gray_mold393.jpg",
+    "boxes": [
+      {
+        "class_id": 3,
+        "class_name": "Gray Mold",
+        "confidence": 0.90625,
+        "bbox_xyxy": [
+          191.39900937899415,
+          125.36184340432703,
+          269.69357280448537,
+          228.58654988267122
+        ]
+      }
+    ]
+  },
+  {
+    "image": "02_samples/images/leaf_spot1.jpg",
+    "boxes": [
+      {
+        "class_id": 4,
+        "class_name": "Leaf Spot",
+        "confidence": 0.97021484375,
+        "bbox_xyxy": [
+          223.06305526018542,
+          164.786721701852,
+          380.500007054486,
+          419.0
+        ]
+      },
+      {
+        "class_id": 4,
+        "class_name": "Leaf Spot",
+        "confidence": 0.9560546875,
+        "bbox_xyxy": [
+          89.08481149682373,
+          144.02661275618533,
+          231.60255132893292,
+          405.88871514257664
+        ]
+      },
+      {
+        "class_id": 4,
+        "class_name": "Leaf Spot",
+        "confidence": 0.94140625,
+        "bbox_xyxy": [
+          153.90988589399507,
+          1.201239143894444,
+          286.31868997567767,
+          314.9720677856482
+        ]
+      },
+      {
+        "class_id": 4,
+        "class_name": "Leaf Spot",
+        "confidence": 0.86181640625,
+        "bbox_xyxy": [
+          116.36802586357346,
+          0.0,
+          174.84776223674044,
+          109.22762029585174
+        ]
+      },
+      {
+        "class_id": 4,
+        "class_name": "Leaf Spot",
+        "confidence": 0.515625,
+        "bbox_xyxy": [
+          0.0046615356293983725,
+          0.0,
+          112.31130748526436,
+          153.94697514914728
+        ]
+      }
+    ]
+  },
+  {
+    "image": "02_samples/images/powdery_mildew_fruit123.jpg",
+    "boxes": [
+      {
+        "class_id": 5,
+        "class_name": "Powdery Mildew Fruit",
+        "confidence": 0.9580078125,
+        "bbox_xyxy": [
+          75.24095329506605,
+          0.05042696992842366,
+          350.7909784719457,
+          418.13939122056973
+        ]
+      },
+      {
+        "class_id": 5,
+        "class_name": "Powdery Mildew Fruit",
+        "confidence": 0.92919921875,
+        "bbox_xyxy": [
+          49.679218564213144,
+          268.69624503364025,
+          157.75735466999913,
+          418.91891797110065
+        ]
+      }
+    ]
+  },
+  {
+    "image": "02_samples/images/powdery_mildew_leaf375.jpg",
+    "boxes": [
+      {
+        "class_id": 6,
+        "class_name": "Powdery Mildew Leaf",
+        "confidence": 0.9521484375,
+        "bbox_xyxy": [
+          178.20578266829304,
+          170.44857261003907,
+          255.0184277473333,
+          288.69498249544984
+        ]
+      },
+      {
+        "class_id": 6,
+        "class_name": "Powdery Mildew Leaf",
+        "confidence": 0.92822265625,
+        "bbox_xyxy": [
+          138.52861447430283,
+          113.5688982157847,
+          185.6452670181745,
+          246.15475916347168
+        ]
+      },
+      {
+        "class_id": 6,
+        "class_name": "Powdery Mildew Leaf",
+        "confidence": 0.91259765625,
+        "bbox_xyxy": [
+          160.99110334577176,
+          84.3103844225559,
+          273.90743912595275,
+          202.99408258375215
+        ]
+      }
+    ]
+  }
+]

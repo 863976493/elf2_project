@@ -1,0 +1,20 @@
+ELF2 vehicle-side source bundle with project models
+Created: 2026-07-08T09:51:33+00:00
+Host: elf2-desktop
+
+Included paths:
+- /root/elf2_strawberry_ws/src
+- /root/M3Pro_ws/src
+- /root/elf2_official_sort_ws/src
+- /root/embedded_project/项目源码/orin版本源码/m3pro_ws/m3pro_ws/src
+- /root/strawberry_models
+- /root/deploy_elf2_maturity/model
+- /root/m3pro_nav_map
+- /root/inspect_region_bridge.py
+- /root/start_agent.sh
+
+Excluded by scope:
+- ROS build/install/log directories
+- RKNN toolkit examples under /root/rknn_pkg
+- TTS models under /root/MODELS
+- runtime caches

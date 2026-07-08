@@ -1,0 +1,73 @@
+strawberry_tracker_node:
+  ros__parameters:
+    # RKNN inference on ELF2/RK3588
+    rknn_scripts_dir: "/root/deploy_elf2_maturity/scripts"
+    model_path: "/root/deploy_elf2_maturity/model/best_fp16.rknn"
+    class_names_path: "/root/deploy_elf2_maturity/scripts/class_names.json"
+    confidence_threshold: 0.25
+    nms_iou: 0.45
+    score_sum_factor: 0.5
+    rknn_core: -1
+
+    # Same RGB-D camera path as the Jetson project, once Orbbec ROS2 driver is running.
+    rgb_topic: "/camera/color/image_raw"
+    depth_topic: "/camera/depth/image_raw"
+    cmd_vel_topic: "/cmd_vel"
+    max_depth_age: 0.5
+
+    # Cluster selection
+    cluster_min_conf: 0.20
+    cluster_min_box_area_ratio: 0.001
+    cluster_merge_dist_scale: 0.95
+    cluster_expand_x: 0.45
+    cluster_expand_y: 0.45
+    cluster_secondary_dist_scale: 1.10
+    min_cluster_members: 2
+
+    # PID
+    angular_kp: 0.003
+    angular_ki: 0.0
+    angular_kd: 0.001
+    angular_slow_kp: 0.0026
+    angular_fast_kp: 0.0044
+    angular_far_error: 120.0
+    angular_slew_rate: 0.95
+    linear_kp: 0.5
+    linear_ki: 0.0
+    linear_kd: 0.08
+
+    # Control targets
+    target_x_pixel: 320
+    target_y_pixel: 240
+    target_distance: 0.35
+    angular_deadband: 16
+    distance_deadband: 0.05
+
+    # Conservative first-stage speed limits
+    max_angular_speed: 0.42
+    max_linear_speed: 0.20
+    search_angular_speed: 0.18
+
+    no_detection_timeout: 1.5
+    depth_roi_size: 5
+    ema_alpha: 0.25
+    settle_time: 0.8
+
+    clahe_enabled: false
+    clahe_clip_limit: 2.0
+    clahe_tile_size: 8
+
+    web_stream_port: 8080
+    stream_every_n: 3
+    draw_debug_overlay: false
+    result_root_dir: "/root/strawberry_inspection/results"
+    action_name: "/track_strawberry"
+    arm_enabled: true
+    arm_topic: "/arm6_joints"
+    arm_ready_joints: [90, 150, 12, 20, 90, 0]
+    arm_pitch_gain: 0.02
+    arm_pitch_min: 0
+    arm_pitch_max: 40
+    arm_move_time: 200
+    arm_vertical_deadband: 15.0
+    arm_publish_period: 0.15

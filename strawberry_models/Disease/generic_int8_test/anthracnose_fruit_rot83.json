@@ -1,0 +1,17 @@
+{
+  "image": "anthracnose_fruit_rot83.jpg",
+  "elapsed_ms": 26.72,
+  "boxes": [
+    {
+      "xyxy": [
+        153.516,
+        167.522,
+        259.918,
+        324.346
+      ],
+      "confidence": 0.957218,
+      "class_id": 1,
+      "class_name": "Anthracnose Fruit Rot"
+    }
+  ]
+}

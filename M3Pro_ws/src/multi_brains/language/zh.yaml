@@ -1,0 +1,16 @@
+#system logs
+action_service_started: "动作服务已启动..."
+target_point_not_exist: "目标点 '{point_name}' 在导航字典中不存在"
+goal_rejected: "目标被拒绝！"
+interrupt_1 : "检测到唤醒，已中断当前动作"
+debug_log_1: "进入动作执行回调函数，准备执行动作列表：{actions}"
+system_log_1: "空操作无反馈"
+system_log_2: "退出动作执行回调函数"
+system_log_3: "决策层规划: {decision_plan}"
+system_log_4: "常规机器人反馈"
+
+
+#response logs for each action
+action_feedback_1: "机器人反馈:执行{action_name}完成"
+action_feedback_2: "机器人反馈:执行{action_name}失败"
+image_feedback: "图像反馈"

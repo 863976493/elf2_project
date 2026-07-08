@@ -1,0 +1,19 @@
+[board_fp_vs_sim_fp]
+angular_leafspot351.jpg: class=True iou=1.0000 conf_diff=0.0020 pred=Angular Leafspot 0.8940
+anthracnose_fruit_rot83.jpg: class=True iou=0.9991 conf_diff=0.0005 pred=Anthracnose Fruit Rot 0.9668
+blossom_blight147.jpg: class=True iou=0.9991 conf_diff=0.0005 pred=Blossom Blight 0.9556
+gray_mold393.jpg: class=True iou=1.0000 conf_diff=0.0000 pred=Gray Mold 0.9062
+leaf_spot1.jpg: class=True iou=0.9995 conf_diff=0.0000 pred=Leaf Spot 0.9702
+powdery_mildew_fruit123.jpg: class=True iou=0.9994 conf_diff=0.0010 pred=Powdery Mildew Fruit 0.9590
+powdery_mildew_leaf375.jpg: class=True iou=0.9992 conf_diff=0.0005 pred=Powdery Mildew Leaf 0.9526
+summary: class 7/7, iou_min=0.9991, conf_diff_max=0.0020
+
+[board_int8_vs_sim_fp]
+angular_leafspot351.jpg: class=True iou=0.9996 conf_diff=0.0265 pred=Angular Leafspot 0.9225
+anthracnose_fruit_rot83.jpg: class=True iou=0.9923 conf_diff=0.0101 pred=Anthracnose Fruit Rot 0.9572
+blossom_blight147.jpg: class=True iou=0.9932 conf_diff=0.0032 pred=Blossom Blight 0.9528
+gray_mold393.jpg: class=True iou=0.9706 conf_diff=0.0069 pred=Gray Mold 0.8993
+leaf_spot1.jpg: class=True iou=0.9964 conf_diff=0.0014 pred=Leaf Spot 0.9688
+powdery_mildew_fruit123.jpg: class=True iou=0.9979 conf_diff=0.0201 pred=Powdery Mildew Fruit 0.9379
+powdery_mildew_leaf375.jpg: class=True iou=0.9919 conf_diff=0.0026 pred=Powdery Mildew Leaf 0.9495
+summary: class 7/7, iou_min=0.9706, conf_diff_max=0.0265

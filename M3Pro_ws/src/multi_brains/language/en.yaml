@@ -1,0 +1,14 @@
+#system logs
+action_service_started: "Action service has started..."
+target_point_not_exist: "The target point '{point_name}' does not exist in the navigation dictionary."
+goal_rejected: "The target was rejected!"
+interrupt_1 : "Wake-up detected, current action interrupted."
+debug_log_1: "Entering the action execution callback function, preparing to execute the action list: {actions}"
+system_log_1: "No operation, no feedback."
+system_log_2: "The exit action executes the callback function."
+system_log_3: "Decision-making level planning: {decision_plan}"
+system_log_4: "Conventional robot feedback"
+#response logs for each action
+action_feedback_1: "Robot feedback: Execution {action_name} completed"
+action_feedback_2: "Robot feedback: Failed to execute {action_name}"
+image_feedback: "Image feedback"

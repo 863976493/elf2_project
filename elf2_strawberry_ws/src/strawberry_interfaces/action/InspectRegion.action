@@ -1,0 +1,12 @@
+# Goal
+string region
+string task_id
+---
+# Result
+bool success
+string message
+string result_json
+---
+# Feedback
+string stage
+string detail

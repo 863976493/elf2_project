@@ -1,0 +1,39 @@
+{
+  "image": "powdery_mildew_leaf375.jpg",
+  "elapsed_ms": 27.115,
+  "boxes": [
+    {
+      "xyxy": [
+        178.373,
+        170.679,
+        255.042,
+        289.133
+      ],
+      "confidence": 0.949499,
+      "class_id": 6,
+      "class_name": "Powdery Mildew Leaf"
+    },
+    {
+      "xyxy": [
+        138.806,
+        113.533,
+        186.074,
+        246.219
+      ],
+      "confidence": 0.92248,
+      "class_id": 6,
+      "class_name": "Powdery Mildew Leaf"
+    },
+    {
+      "xyxy": [
+        161.042,
+        84.41,
+        274.841,
+        202.993
+      ],
+      "confidence": 0.910901,
+      "class_id": 6,
+      "class_name": "Powdery Mildew Leaf"
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "image": "gray_mold393.jpg",
+  "elapsed_ms": 27.1,
+  "boxes": [
+    {
+      "xyxy": [
+        192.76,
+        125.052,
+        269.432,
+        227.971
+      ],
+      "confidence": 0.899322,
+      "class_id": 3,
+      "class_name": "Gray Mold"
+    }
+  ]
+}

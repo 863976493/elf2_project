@@ -1,0 +1,28 @@
+{
+  "image": "powdery_mildew_fruit123.jpg",
+  "elapsed_ms": 26.199,
+  "boxes": [
+    {
+      "xyxy": [
+        75.178,
+        0.094,
+        350.379,
+        418.0
+      ],
+      "confidence": 0.937919,
+      "class_id": 5,
+      "class_name": "Powdery Mildew Fruit"
+    },
+    {
+      "xyxy": [
+        49.578,
+        268.683,
+        158.188,
+        418.0
+      ],
+      "confidence": 0.92634,
+      "class_id": 5,
+      "class_name": "Powdery Mildew Fruit"
+    }
+  ]
+}

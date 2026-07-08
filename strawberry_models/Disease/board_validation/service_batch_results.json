@@ -1,0 +1,163 @@
+[
+  {
+    "image": "angular_leafspot351.jpg",
+    "success": true,
+    "result": {
+      "task_id": "batch_disease",
+      "region": "A",
+      "image_path": "/root/strawberry_models/Disease/samples/angular_leafspot351.jpg",
+      "disease": {
+        "class": "Angular Leafspot",
+        "class_id": 0,
+        "confidence": 0.92248
+      },
+      "maturity": {
+        "class": "none",
+        "class_id": -1,
+        "confidence": 0.0
+      },
+      "timing_ms": {
+        "disease": 36.651,
+        "maturity": 86.246
+      }
+    }
+  },
+  {
+    "image": "anthracnose_fruit_rot83.jpg",
+    "success": true,
+    "result": {
+      "task_id": "batch_disease",
+      "region": "A",
+      "image_path": "/root/strawberry_models/Disease/samples/anthracnose_fruit_rot83.jpg",
+      "disease": {
+        "class": "Anthracnose Fruit Rot",
+        "class_id": 1,
+        "confidence": 0.957218
+      },
+      "maturity": {
+        "class": "0",
+        "class_id": 0,
+        "confidence": 0.602539
+      },
+      "timing_ms": {
+        "disease": 35.056,
+        "maturity": 79.593
+      }
+    }
+  },
+  {
+    "image": "blossom_blight147.jpg",
+    "success": true,
+    "result": {
+      "task_id": "batch_disease",
+      "region": "A",
+      "image_path": "/root/strawberry_models/Disease/samples/blossom_blight147.jpg",
+      "disease": {
+        "class": "Blossom Blight",
+        "class_id": 2,
+        "confidence": 0.952814
+      },
+      "maturity": {
+        "class": "2",
+        "class_id": 2,
+        "confidence": 0.369385
+      },
+      "timing_ms": {
+        "disease": 32.941,
+        "maturity": 79.307
+      }
+    }
+  },
+  {
+    "image": "gray_mold393.jpg",
+    "success": true,
+    "result": {
+      "task_id": "batch_disease",
+      "region": "A",
+      "image_path": "/root/strawberry_models/Disease/samples/gray_mold393.jpg",
+      "disease": {
+        "class": "Gray Mold",
+        "class_id": 3,
+        "confidence": 0.899322
+      },
+      "maturity": {
+        "class": "none",
+        "class_id": -1,
+        "confidence": 0.0
+      },
+      "timing_ms": {
+        "disease": 32.168,
+        "maturity": 77.476
+      }
+    }
+  },
+  {
+    "image": "leaf_spot1.jpg",
+    "success": true,
+    "result": {
+      "task_id": "batch_disease",
+      "region": "A",
+      "image_path": "/root/strawberry_models/Disease/samples/leaf_spot1.jpg",
+      "disease": {
+        "class": "Leaf Spot",
+        "class_id": 4,
+        "confidence": 0.968798
+      },
+      "maturity": {
+        "class": "1",
+        "class_id": 1,
+        "confidence": 0.515625
+      },
+      "timing_ms": {
+        "disease": 32.665,
+        "maturity": 79.889
+      }
+    }
+  },
+  {
+    "image": "powdery_mildew_fruit123.jpg",
+    "success": true,
+    "result": {
+      "task_id": "batch_disease",
+      "region": "A",
+      "image_path": "/root/strawberry_models/Disease/samples/powdery_mildew_fruit123.jpg",
+      "disease": {
+        "class": "Powdery Mildew Fruit",
+        "class_id": 5,
+        "confidence": 0.937919
+      },
+      "maturity": {
+        "class": "none",
+        "class_id": -1,
+        "confidence": 0.0
+      },
+      "timing_ms": {
+        "disease": 34.161,
+        "maturity": 73.091
+      }
+    }
+  },
+  {
+    "image": "powdery_mildew_leaf375.jpg",
+    "success": true,
+    "result": {
+      "task_id": "batch_disease",
+      "region": "A",
+      "image_path": "/root/strawberry_models/Disease/samples/powdery_mildew_leaf375.jpg",
+      "disease": {
+        "class": "Powdery Mildew Leaf",
+        "class_id": 6,
+        "confidence": 0.949499
+      },
+      "maturity": {
+        "class": "none",
+        "class_id": -1,
+        "confidence": 0.0
+      },
+      "timing_ms": {
+        "disease": 26.007,
+        "maturity": 45.427
+      }
+    }
+  }
+]

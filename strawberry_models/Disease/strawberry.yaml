@@ -1,0 +1,13 @@
+names:
+- Angular Leafspot
+- Anthracnose Fruit Rot
+- Blossom Blight
+- Gray Mold
+- Leaf Spot
+- Powdery Mildew Fruit
+- Powdery Mildew Leaf
+nc: 7
+path: /kaggle/working/dataset
+test: test/images
+train: train/images
+val: val/images

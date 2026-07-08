@@ -1,0 +1,19 @@
+# Goal
+float32 target_distance
+float32 timeout_sec
+uint8 max_attempts
+string task_id
+string region
+---
+# Result
+bool success
+string message
+string image_path
+float32 final_distance
+---
+# Feedback
+string state
+float32 distance
+int32 detection_count
+float32 linear_x
+float32 angular_z

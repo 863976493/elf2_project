@@ -1,0 +1,59 @@
+﻿#澶фā鍨嬫帴鍙ｉ厤缃枃浠禠arge model interface configuration file
+
+#--------------------------------------------------------鍥藉唴鐢ㄦ埛閰嶇疆閫夐」------------------------------------------------
+#-----------------------------------------------------------蹇呴』閰嶇疆椤?-------------------------------------------------
+#闃块噷鐧剧偧澶фā鍨嬪钩鍙伴厤缃?                                                         
+tongyi_api_key : "YOUR_TONGYI_API_KEY"                           #濉啓鑷繁鐨刟pi_key                                                                  
+tongyi_app_id : '6427xxxxxxxxxxxxxxxxxxxxxxxxxxxx'                               #濉啓鑷繁鐨刟pp_id                                         
+multimodel : "qwen-vl-max"                                            #鎵ц灞傚ぇ妯″瀷锛岄€夌敤澶氭ā鎬佹ā鍨嬶紝娴嬭瘯杈冪ǔ瀹氭ā鍨嬶細"qwen-vl-max" 銆?qwen-vl-max-2025-04-08"銆?qwen-vl-max-2025-04-02"
+
+#----------------------------------------------------------鍙€夐厤缃」锛堥潪蹇呴』锛?-------------------------------------------------
+#oline_asr閰嶇疆
+oline_asr_sample_rate: 16000                                                   #asr闊抽閲囨牱鐜?
+oline_asr_model : 'paraformer-realtime-v2'                                     # 'paraformer-realtime-v2','paraformer-realtime-v1','paraformer-realtime-8k-v2','paraformer-realtime-8k-v1','gummy-realtime-v1','gummy-chat-v1'
+
+#oline_tts閰嶇疆
+tts_supplier :  "aliyun"                                                        #tts璇煶鍚堟垚妯″瀷渚涘簲鍟嗭細aliyun/baidu 鐩墠鎻愪緵涓や釜骞冲彴鐨勬帴鍙ｏ紝璇﹁large_model_interface.py鎺ュ彛绋嬪簭
+
+#閫氫箟鍗冮棶骞冲彴璇煶鍚堟垚閰嶇疆
+oline_tts_model : "cosyvoice-v2"                                                #璇煶妯″瀷
+voice_tone : "longwan_v2"
+
+#鐧惧害鏅鸿兘浜戝钩鍙拌闊冲悎鎴愭ā鍨?
+baidu_API_KEY : 'lQ3ybxxxxxxxxxxxxxxxxxxx'                                      #鐧惧害骞冲彴璇煶鍚堟垚API_KEY
+baidu_SECRET_KEY : 'KBT3icxxxxxxxxxxxxxxxxxxxxxxxxxx'                           #鐧惧害骞冲彴璇煶鍚堟垚SECRET_KEY
+PER : 4                                                                         # 鍙戦煶浜洪€夋嫨, 鍩虹闊冲簱锛?涓哄害灏忕編锛?涓哄害灏忓畤锛?涓哄害閫嶉仴锛?涓哄害涓斧锛岀簿鍝侀煶搴擄細5涓哄害灏忓▏锛?03涓哄害绫虫湹锛?06涓哄害鍗氭枃锛?10涓哄害灏忕锛?11涓哄害灏忚悓锛岄粯璁や负搴﹀皬缇?
+SPD : 5                                                                         # 璇€燂紝鍙栧€?-15锛岄粯璁や负5涓閫?
+PIT : 5                                                                         # 闊宠皟锛屽彇鍊?-15锛岄粯璁や负5涓璋?
+VOL : 5                                                                         # 闊抽噺锛屽彇鍊?-9锛岄粯璁や负5涓煶閲?
+CUID : 'IN7dAxxxxxxxxxxxxxxxxxxxxxxxxxxx'                                       # 璁惧鏍囪瘑锛岃幏鍙栧湴鍧€锛歨ttps://console.bce.baidu.com/support/?u=aiconsole&timestamp=1749002896844#/api?product=AI&project=%E8%AF%AD%E9%9F%B3%E6%8A%80%E6%9C%AF&parent=%E8%AF%AD%E9%9F%B3%E5%90%88%E6%88%90&api=text2audio&method=post
+
+
+#------------------------------------------------------鍥介檯鐢ㄦ埛閰嶇疆閫夐」International version configuration options--------------------------------------------
+
+decision_AI_api_key : "YOUR_DIFY_DECISION_API_KEY"                   #dify鍐崇瓥澶фā鍨嬪簲鐢ˋPI_KEY
+execution_AI_api_key : "YOUR_DIFY_EXECUTION_API_KEY"                  #dify鎵ц澶фā鍨嬪簲鐢ˋPI_KEY
+
+#--------------------------------------------------------绯荤粺閰嶇疆锛堟棤鐗规畩璇峰嬁淇敼锛塖ystem configuration (Please do not modify unless otherwise specified)-----------------------------------
+#鏈湴tts妯″瀷閰嶇疆Local tts model configuration
+tts_language : "zh"        #zh锛氫腑鏂?en锛氳嫳鏂?
+zh_tts_model : "/home/jetson/MODELS/tts/zh/zh_CN-huayan-medium.onnx"              
+zh_tts_json : "/home/jetson/MODELS/tts/zh/zh_CN-huayan-medium.onnx.json"  
+en_tts_model : "/home/jetson/MODELS/tts/en/en_US-libritts-high.onnx"              
+en_tts_json : "/home/jetson/MODELS/tts/en/en_US-libritts-high.onnx.json" 
+#鏈湴asr妯″瀷閰嶇疆Local asr model configuration
+local_asr_model : "/home/jetson/MODELS/asr/SenseVoiceSmall"
+#閫氫箟鎺ュ彛鍦板潃锛屾棤闇€淇敼Tongyi interface address, no need to modify
+tongyi_base_url : "https://dashscope.aliyuncs.com/compatible-mode/v1" 
+
+#缃戠粶閫傞厤鍣╪etwork adapter
+network_adapter : "wlP1p1s0"
+
+
+
+
+
+
+
+
+
