@@ -15,6 +15,7 @@
 ├── m3pro_nav_map/               # 导航地图
 ├── cloud/                       # 云端服务、数据接口、Web 展示与模拟工具
 ├── media/                       # 比赛演示视频（Git LFS 管理）
+├── docs/                        # 技术文档
 ├── inspect_region_bridge.py     # 云端巡检桥接脚本
 ├── start_agent.sh               # 32 控制板代理启动脚本
 └── SOURCE_MANIFEST.txt          # 打包来源清单
@@ -28,6 +29,11 @@
 - Orbbec Dabai DCW2 相机
 - `ROS_DOMAIN_ID=30`
 
+
+
+## 技术文档
+
+技术文档位于 `docs/技术文档.pdf`。
 
 ## 云端服务
 
@@ -173,6 +179,8 @@ ros2 launch slam_mapping save_map.launch.py map_path:=/root/m3pro_nav_map/yahboo
 ## 开源说明
 
 本项目代码以 MIT License 开源。仓库中包含的第三方 SDK、设备驱动、模型权重或示例资源，其版权和许可证归原作者或供应商所有。
+
+
 
 
 
