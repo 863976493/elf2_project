@@ -1,0 +1,2818 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>草莓园区巡检机器人 · 云端控制平台</title>
+<script src="https://cdn.jsdelivr.net/npm/vue@3.4.21/dist/vue.global.prod.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/vue-router@4.3.0/dist/vue-router.global.prod.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#0a0e27;color:#c9d1d9;font-family:'Segoe UI',system-ui,sans-serif;height:100vh;overflow:hidden}
+#app{display:flex;flex-direction:column;height:100vh}
+
+/* 顶部导航 */
+.topnav{display:flex;align-items:center;gap:0;background:linear-gradient(90deg,#0d1117,#111820);border-bottom:1px solid #1e3a5f;padding:0 20px;height:52px;flex-shrink:0}
+.brand{font-size:15px;font-weight:700;color:#00e676;letter-spacing:1px;margin-right:28px;white-space:nowrap}
+.nav-links{display:flex;gap:4px;flex:1}
+.nav-links a{padding:6px 14px;border-radius:5px;color:#8b949e;text-decoration:none;font-size:13px;transition:all 0.18s;white-space:nowrap}
+.nav-links a:hover{color:#c9d1d9;background:rgba(30,58,95,0.4)}
+.nav-links a.router-link-active{color:#00e676;background:rgba(0,230,118,0.08);border:1px solid rgba(0,230,118,0.2)}
+.status-bar{display:flex;align-items:center;gap:14px;margin-left:auto}
+.status-item{display:flex;align-items:center;gap:5px;font-size:12px;color:#8b949e}
+.status-dot{width:7px;height:7px;border-radius:50%;transition:all 0.3s}
+.status-dot.on{background:#00e676;box-shadow:0 0 6px #00e676,0 0 14px #00e67650;animation:pulse-on 2s ease-in-out infinite}
+.status-dot.off{background:#ff5252;box-shadow:0 0 4px #ff525260;animation:pulse-off 3s ease-in-out infinite}
+@keyframes pulse-on{0%,100%{box-shadow:0 0 6px #00e676,0 0 14px #00e67650;opacity:1}50%{box-shadow:0 0 2px #00e67680,0 0 5px #00e67630;opacity:0.7}}
+@keyframes pulse-off{0%,100%{opacity:1}50%{opacity:0.45}}
+.clock{font-size:12px;color:#4a5568;letter-spacing:1px}
+.report-badge{display:inline-block;background:#ff5252;color:#fff;border-radius:10px;font-size:10px;padding:1px 5px;margin-left:4px;min-width:16px;text-align:center;line-height:14px;vertical-align:middle}
+
+/* 页面通用 */
+.page-inner{flex:1;overflow-y:auto;padding:16px 20px}
+.page-content-wrap{max-width:1200px;margin:0 auto}
+.page-title{font-size:16px;font-weight:600;color:#e0e0e0;margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid #1e3a5f}
+.card{background:linear-gradient(180deg,#0d1117,#111820);border:1px solid #1e3a5f;border-radius:8px;padding:20px}
+
+/* 控制台 */
+.dashboard{display:grid;grid-template-columns:37% 63%;grid-template-rows:1fr;gap:12px;padding:12px;height:100%}
+.video-panel{grid-column:1;grid-row:1;display:flex;flex-direction:column;gap:10px}
+.chart-area{grid-column:2;grid-row:1;display:flex;flex-direction:column;gap:12px}
+.video-box{background:#000;border:1px solid #1e3a5f;border-radius:8px;overflow:hidden;aspect-ratio:16/9;display:flex;align-items:center;justify-content:center;position:relative}
+.video-placeholder{display:flex;flex-direction:column;align-items:center;gap:8px;color:#3d4f6b}
+.video-frame-box{flex:1;display:flex;align-items:center;justify-content:center;background:#000;border:1px solid #1e3a5f;border-radius:8px;overflow:hidden;position:relative;min-height:0;aspect-ratio:16/9}
+.video-frame-box img{width:100%;height:100%;object-fit:contain;display:block}
+.video-frame-box .video-offline{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(0,0,0,0.72);color:#64748b;font-size:13px;pointer-events:none}
+.video-offline .offline-icon{font-size:42px;margin-bottom:10px;display:block}
+.video-status-bar{display:flex;align-items:center;justify-content:space-between;margin-top:8px;font-size:11px;color:#8b949e}
+.video-live-dot{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:6px}
+.video-live-dot.on{background:#ff5252;animation:pulse-on 1.5s infinite}
+.video-live-dot.off{background:#555}
+.sensor-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.sensor-card{background:linear-gradient(180deg,#0d1117,#111820);border:1px solid #1e3a5f;border-radius:6px;padding:12px}
+.sensor-label{font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px}
+.sensor-value{font-size:20px;font-weight:700;color:#00e676}
+.sensor-unit{font-size:11px;color:#6b7280;margin-left:3px}
+.zone-monitor-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.zone-monitor-card{background:linear-gradient(180deg,#0d1117,#111820);border:1px solid #1e3a5f;border-radius:8px;padding:12px}
+.zone-monitor-card.warn{border-color:rgba(255,82,82,0.65);box-shadow:0 0 14px rgba(255,82,82,0.08)}
+.zone-monitor-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.zone-monitor-title{font-size:13px;font-weight:600;color:#e0e0e0}
+.zone-monitor-state{font-size:11px;border:1px solid;border-radius:4px;padding:2px 8px}
+.zone-monitor-state.ok{color:#00e676;border-color:rgba(0,230,118,0.35);background:rgba(0,230,118,0.06)}
+.zone-monitor-state.warn{color:#ff5252;border-color:rgba(255,82,82,0.4);background:rgba(255,82,82,0.06)}
+.zone-metric-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.zone-metric{border:1px solid rgba(30,58,95,0.45);border-radius:6px;padding:8px;background:rgba(30,58,95,0.12)}
+.zone-metric.bad{border-color:rgba(255,82,82,0.45);background:rgba(255,82,82,0.05)}
+.zone-metric-label{font-size:10px;color:#4a5568;letter-spacing:1px;margin-bottom:3px}
+.zone-metric-value{font-size:18px;font-weight:700;color:#00e676}
+.zone-metric.bad .zone-metric-value{color:#ff5252}
+.zone-advice{font-size:11px;color:#8b949e;line-height:1.55;margin-top:8px;min-height:34px}
+.zone-advice.warn{color:#ff8a80}
+.chart-card{background:linear-gradient(180deg,#0d1117,#111820);border:1px solid #1e3a5f;border-radius:8px;padding:10px;flex:1;display:flex;flex-direction:column}
+.chart-title{font-size:11px;color:#4a5568;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px}
+
+/* 雷达占位 */
+.radar-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;width:100%;height:100%}
+.radar-circle{position:relative;width:110px;height:110px}
+.radar-ring{position:absolute;border-radius:50%;border:1px solid rgba(0,230,118,0.25);top:50%;left:50%;transform:translate(-50%,-50%)}
+.radar-ring.r1{width:110px;height:110px}.radar-ring.r2{width:72px;height:72px}.radar-ring.r3{width:36px;height:36px}
+.radar-sweep{position:absolute;width:50%;height:2px;background:linear-gradient(90deg,transparent 0%,rgba(0,230,118,0.7) 100%);top:50%;left:50%;transform-origin:0% 50%;animation:radar-spin 3s linear infinite;border-radius:0 2px 2px 0;filter:drop-shadow(0 0 4px #00e676)}
+.radar-dot{position:absolute;width:7px;height:7px;background:#00e676;border-radius:50%;top:50%;left:50%;transform:translate(-50%,-50%);box-shadow:0 0 8px #00e676}
+@keyframes radar-spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+.radar-label{margin-top:16px;color:rgba(0,230,118,0.55);font-size:12px;letter-spacing:3px;animation:blink-txt 2s ease-in-out infinite}
+@keyframes blink-txt{0%,100%{opacity:1}50%{opacity:0.3}}
+
+/* 机器人状态 */
+.robot-card{background:linear-gradient(180deg,#0d1117,#111820);border:1px solid #1e3a5f;border-radius:8px;padding:12px}
+.robot-header{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.robot-state-tag{font-size:11px;padding:2px 8px;border-radius:4px;border:1px solid}
+.robot-state-tag.online{color:#00e676;border-color:rgba(0,230,118,0.4);background:rgba(0,230,118,0.06)}
+.robot-state-tag.offline{color:#ff5252;border-color:rgba(255,82,82,0.35);background:rgba(255,82,82,0.05)}
+.robot-stats{display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:12px}
+.robot-stat{color:#8b949e}.robot-stat span{color:#c9d1d9}
+
+/* 园区管理 */
+.zones-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px}
+.zone-card{background:linear-gradient(180deg,#0d1117,#111820);border:1px solid #1e3a5f;border-radius:8px;padding:20px;transition:border-color 0.2s}
+.zone-card:hover{border-color:rgba(0,230,118,0.3)}
+.zone-name{font-size:15px;font-weight:600;color:#e0e0e0;margin-bottom:8px}
+.zone-meta{font-size:12px;color:#6b7280;margin-bottom:12px}
+.zone-status{display:inline-flex;align-items:center;gap:5px;font-size:12px;padding:3px 10px;border-radius:4px;border:1px solid}
+.zone-status.active{color:#00e676;border-color:rgba(0,230,118,0.4);background:rgba(0,230,118,0.06)}
+.zone-status.idle{color:#fbbf24;border-color:rgba(251,191,36,0.3);background:rgba(251,191,36,0.05)}
+.zone-actions{display:flex;gap:8px;margin-top:14px}
+.zone-sensor-line{display:flex;align-items:center;gap:18px;flex-wrap:wrap;margin-top:10px;font-size:19px;line-height:1.6}
+.zone-sensor-humi{color:#7ee787}
+.zone-sensor-light{color:#fff176;font-weight:600}
+.btn{padding:6px 14px;border-radius:5px;border:1px solid;font-size:12px;cursor:pointer;transition:all 0.18s;background:transparent}
+.btn-green{border-color:rgba(0,230,118,0.4);color:#00e676}
+.btn-green:hover{background:rgba(0,230,118,0.1);box-shadow:0 0 10px rgba(0,230,118,0.2)}
+.btn-blue{border-color:rgba(68,138,255,0.4);color:#448aff}
+.btn-blue:hover{background:rgba(68,138,255,0.1)}
+.btn-red{border-color:rgba(255,82,82,0.35);color:#ff5252}
+.btn-red:hover{background:rgba(255,82,82,0.08)}
+.btn-gray{border-color:#1e3a5f;color:#8b949e}
+.btn-gray:hover{background:rgba(30,58,95,0.4)}
+
+/* ═══ 全局重置 ═══ */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: -apple-system, 'Microsoft YaHei', sans-serif;
+  background: #0a0e27;
+  color: #e0e0e0;
+  width: 100vw; height: 100vh;
+  overflow: hidden;
+}
+body::before {
+  content: '';
+  position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+  background-image:
+    linear-gradient(rgba(0,230,118,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,230,118,0.03) 1px, transparent 1px);
+  background-size: 60px 60px;
+  pointer-events: none; z-index: 0;
+}
+
+/* ═══ 顶部栏 ═══ */
+.header {
+  height: 56px;
+  background: linear-gradient(135deg, #0d1117 0%, #161b22 100%);
+  border-bottom: 1px solid #00e67633;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 24px;
+  position: relative; z-index: 10;
+}
+.header h1 {
+  font-size: 20px; font-weight: 600;
+  background: linear-gradient(90deg, #00e676, #00b0ff);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  letter-spacing: 2px;
+}
+.header-right {
+  display: flex; align-items: center; gap: 16px;
+}
+.header .time {
+  color: #00e676; font-size: 13px; font-family: 'Courier New', monospace;
+}
+.status-group {
+  display: flex; align-items: center; gap: 12px; font-size: 12px;
+}
+.status-item {
+  display: flex; align-items: center; gap: 5px;
+}
+.status-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  animation: pulse 2s infinite;
+}
+.status-dot.on { background: #00e676; }
+.status-dot.off { background: #ff5252; }
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+/* ═══ 导航栏 ═══ */
+.nav-bar {
+  height: 40px;
+  background: #0d1117;
+  border-bottom: 1px solid #1e3a5f;
+  display: flex; align-items: center;
+  padding: 0 24px;
+  position: relative; z-index: 10;
+}
+.nav-bar a {
+  color: #8b949e; text-decoration: none;
+  font-size: 13px; padding: 8px 16px;
+  border-radius: 4px;
+  transition: all 0.3s;
+}
+.nav-bar a:hover { color: #e0e0e0; background: #161b2280; }
+.nav-bar a.router-link-active {
+  color: #00e676; background: #00e67615;
+}
+
+/* ═══ 页面容器 ═══ */
+.page-container {
+  height: calc(100vh - 96px);
+  overflow-y: auto;
+  position: relative; z-index: 1;
+}
+.page-container::-webkit-scrollbar { width: 6px; }
+.page-container::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+
+/* ═══ 面板通用 ═══ */
+.panel {
+  background: linear-gradient(180deg, #0d1117 0%, #111820 100%);
+  border: 1px solid #1e3a5f;
+  border-radius: 8px;
+  padding: 16px;
+  display: flex; flex-direction: column;
+  position: relative;
+  overflow: hidden;
+}
+.panel::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #00e676, transparent);
+}
+.panel-title {
+  font-size: 14px; color: #8b949e; margin-bottom: 12px;
+  display: flex; align-items: center; gap: 8px;
+}
+.panel-title span { font-size: 16px; }
+
+/* ═══ Dashboard 大屏布局 ═══ */
+.dashboard {
+  display: grid;
+  grid-template-columns: 35% 25% 40%;
+  grid-template-rows: 1fr 1fr;
+  gap: 12px;
+  padding: 12px;
+  height: 100%;
+}
+
+/* ═══ 视频区 ═══ */
+.video-panel { grid-column: 1; grid-row: 1 / 3; }
+.video-frame-box {
+  flex: 1; display: flex; align-items: center; justify-content: center;
+  background: #000; border-radius: 6px; overflow: hidden;
+  position: relative; min-height: 0;
+}
+.video-frame-box img { max-width: 100%; max-height: 100%; object-fit: contain; }
+.video-offline { color: #555; font-size: 14px; text-align: center; }
+.video-frame-box .video-offline {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  background: rgba(0,0,0,0.72); pointer-events: none;
+}
+.video-offline .offline-icon { font-size: 48px; margin-bottom: 12px; display: block; }
+.video-status-bar {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-top: 8px; font-size: 11px; color: #8b949e;
+}
+.video-live-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  display: inline-block; margin-right: 6px;
+}
+.video-live-dot.on { background: #ff5252; animation: pulse 1.5s infinite; }
+.video-live-dot.off { background: #555; }
+
+/* ═══ 传感器卡片 ═══ */
+.chart-area { grid-column: 2; grid-row: 1 / 3; display: flex; flex-direction: column; gap: 12px; }
+.sensor-cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 8px; }
+.sensor-card {
+  background: #161b2280; border: 1px solid #1e3a5f;
+  border-radius: 6px; padding: 10px; text-align: center;
+}
+.sensor-card .label { font-size: 11px; color: #8b949e; margin-bottom: 4px; }
+.sensor-card .value { font-size: 22px; font-weight: bold; }
+.sensor-card .unit { font-size: 11px; color: #8b949e; }
+.sensor-card .range { font-size: 10px; color: #555; margin-top: 2px; }
+.c-temp { color: #4fc3f7; } .c-humi { color: #81c784; }
+.c-light { color: #fff176; } .c-co2 { color: #ce93d8; }
+.chart-panel { flex: 1; min-height: 0; }
+.chart-container { width: 100%; flex: 1; min-height: 0; }
+
+/* ═══ 病害面板 ═══ */
+.disease-panel { grid-column: 3; grid-row: 1; }
+.disease-status {
+  flex: 1; display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  border-radius: 8px; padding: 16px;
+  transition: all 0.5s ease;
+}
+.disease-status.ok {
+  background: radial-gradient(ellipse at center, #00e67610 0%, transparent 70%);
+  border: 1px solid #00e67630;
+}
+.disease-status.warn {
+  background: radial-gradient(ellipse at center, #ff525215 0%, transparent 70%);
+  border: 1px solid #ff525240;
+  animation: warn-pulse 1.5s infinite;
+}
+@keyframes warn-pulse {
+  0%, 100% { border-color: #ff525240; }
+  50% { border-color: #ff5252; box-shadow: 0 0 20px #ff525230; }
+}
+.disease-icon { font-size: 40px; margin-bottom: 8px; }
+.disease-text { font-size: 16px; font-weight: 600; margin-bottom: 6px; }
+.disease-sub { font-size: 12px; color: #8b949e; }
+.disease-time { font-size: 11px; color: #555; margin-top: 6px; }
+.disease-chart-area { height: 120px; margin-top: 8px; }
+.alert-list { max-height: 100px; overflow-y: auto; margin-top: 8px; }
+.alert-item {
+  padding: 5px 10px; margin-bottom: 3px;
+  border-radius: 4px; font-size: 11px;
+  border-left: 3px solid #ff9800; background: #ff980010;
+}
+.alert-item.danger { border-left-color: #ff5252; background: #ff525210; }
+.alert-item .alert-time { color: #555; font-size: 10px; }
+
+/* ═══ AI面板 ═══ */
+.ai-panel { grid-column: 3; grid-row: 2; }
+.ai-content {
+  flex: 1; overflow-y: auto; min-height: 0;
+  padding: 12px; background: #0a0e1a; border-radius: 6px;
+  border: 1px solid #1e3a5f;
+  font-size: 13px; line-height: 1.8; color: #c9d1d9;
+  white-space: pre-wrap; word-break: break-all;
+}
+.ai-content::-webkit-scrollbar { width: 4px; }
+.ai-content::-webkit-scrollbar-thumb { background: #333; border-radius: 2px; }
+.ai-btn {
+  margin-top: 10px; padding: 10px 0; width: 100%;
+  border: 1px solid #00e67650; border-radius: 6px;
+  background: linear-gradient(135deg, #00e67615, #00b0ff15);
+  color: #00e676; font-size: 14px; font-weight: 600;
+  cursor: pointer; transition: all 0.3s; letter-spacing: 1px;
+}
+.ai-btn:hover { background: linear-gradient(135deg, #00e67630, #00b0ff30); box-shadow: 0 0 15px #00e67620; }
+.ai-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* ═══ 机器人状态卡片 ═══ */
+.robot-card {
+  background: #161b2280; border: 1px solid #1e3a5f;
+  border-radius: 6px; padding: 10px 14px;
+  margin-bottom: 8px; display: flex; align-items: center; gap: 12px;
+}
+.robot-card .robot-icon { font-size: 28px; }
+.robot-card .robot-info { flex: 1; }
+.robot-card .robot-info .label { font-size: 11px; color: #8b949e; }
+.robot-card .robot-info .val { font-size: 14px; font-weight: 600; }
+
+/* ═══ 通用页面 ═══ */
+.page-inner { padding: 20px; }
+.page-title { font-size: 20px; margin-bottom: 16px; color: #00e676; }
+
+/* ═══ 园区管理 ═══ */
+.zone-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; }
+.zone-card {
+  background: #0d1117; border: 1px solid #1e3a5f; border-radius: 8px;
+  padding: 16px; cursor: pointer; transition: all 0.3s;
+}
+.zone-card:hover { border-color: #00e676; box-shadow: 0 0 10px #00e67620; }
+.zone-card h3 { color: #00e676; margin-bottom: 8px; }
+.zone-card p { font-size: 13px; color: #8b949e; margin-bottom: 6px; }
+.zone-card .sensor-mini { display: flex; gap: 12px; font-size: 12px; color: #c9d1d9; }
+
+/* ═══ 表单 ═══ */
+.form-group { margin-bottom: 12px; }
+.form-group label { display: block; font-size: 13px; color: #8b949e; margin-bottom: 4px; }
+.form-group input, .form-group select {
+  width: 100%; padding: 8px 12px; background: #0d1117; border: 1px solid #1e3a5f;
+  border-radius: 6px; color: #e0e0e0; font-size: 14px; outline: none;
+}
+.form-group input:focus { border-color: #00e676; }
+
+.btn {
+  padding: 8px 20px; border: 1px solid #00e67650; border-radius: 6px;
+  background: #00e67615; color: #00e676; font-size: 13px;
+  cursor: pointer; transition: all 0.3s;
+}
+.btn:hover { background: #00e67630; }
+.btn-danger { border-color: #ff525250; background: #ff525215; color: #ff5252; }
+.btn-danger:hover { background: #ff525230; }
+
+/* ═══ 地图页 ═══ */
+.map-container {
+  background: #000; border: 1px solid #1e3a5f; border-radius: 8px;
+  height: calc(100vh - 200px); position: relative; overflow: hidden;
+}
+.map-container canvas { width: 100%; height: 100%; }
+.map-toolbar {
+  display: flex; gap: 8px; margin-bottom: 12px; align-items: center; flex-wrap: wrap;
+}
+.map-scope-chip{height:38px;display:inline-flex;align-items:center;padding:0 14px;border:1px solid #1e3a5f;border-radius:6px;background:#0d1117;color:#c9d1d9;font-size:13px}
+.map-toolbar select {
+  padding: 6px 10px; border: 1px solid #1e3a5f; border-radius: 6px;
+  background: #0d1117; color: #e0e0e0; font-size: 13px;
+}
+.map-page-layout {
+  display: flex; gap: 12px; height: calc(100vh - 170px);
+}
+.map-page-layout .map-container {
+  flex: 1; height: 100%;
+}
+.path-sidebar {
+  width: 240px; min-width: 240px; background: #0d1117; border: 1px solid #1e3a5f;
+  border-radius: 8px; padding: 12px; overflow-y: auto;
+}
+.path-sidebar h4 {
+  font-size: 13px; color: #8b949e; margin-bottom: 10px; font-weight: normal;
+}
+.path-item {
+  padding: 8px 10px; border: 1px solid #1e3a5f; border-radius: 6px;
+  margin-bottom: 8px; font-size: 12px; cursor: pointer; transition: all 0.2s;
+}
+.path-item:hover { border-color: #00e67650; background: #00e67610; }
+.path-item.active { border-color: #00e676; background: #00e67620; }
+.path-item .path-name { color: #e0e0e0; font-weight: 500; margin-bottom: 4px; }
+.path-item .path-meta { color: #555; font-size: 11px; }
+.path-item .path-actions { display: flex; gap: 6px; margin-top: 6px; }
+.path-item .path-actions button { padding: 2px 8px; font-size: 11px; }
+.btn.active { background: #00e676; color: #0a0e27; border-color: #00e676; font-weight: 600; }
+.map-info-bar {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  background: #0d1117dd; padding: 6px 12px; font-size: 11px;
+  display: flex; justify-content: space-between; color: #8b949e;
+  border-top: 1px solid #1e3a5f30;
+}
+.context-menu {
+  position: fixed; background: #161b22; border: 1px solid #1e3a5f;
+  border-radius: 6px; padding: 4px 0; z-index: 1000; min-width: 120px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+}
+.context-menu div {
+  padding: 6px 14px; font-size: 12px; cursor: pointer; color: #e0e0e0;
+}
+.context-menu div:hover { background: #00e67620; color: #00e676; }
+.save-form-inline {
+  display: flex; gap: 6px; align-items: center;
+}
+.save-form-inline input {
+  padding: 6px 10px; border: 1px solid #1e3a5f; border-radius: 6px;
+  background: #0d1117; color: #e0e0e0; font-size: 13px; width: 140px;
+}
+.mini-canvas-modal {
+  position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.7); display: flex; align-items: center;
+  justify-content: center; z-index: 1000;
+}
+.mini-canvas-modal .modal-body {
+  background: #0d1117; border: 1px solid #1e3a5f; border-radius: 8px;
+  padding: 16px; min-width: 340px;
+}
+.mini-canvas-modal .modal-body h4 {
+  margin-bottom: 10px; font-size: 14px; color: #e0e0e0;
+}
+.record-filters {
+  display: flex; gap: 10px; margin-bottom: 12px; align-items: center;
+}
+.record-filters select {
+  padding: 6px 10px; border: 1px solid #1e3a5f; border-radius: 6px;
+  background: #0d1117; color: #e0e0e0; font-size: 13px;
+}
+
+/* ═══ 巡检记录 ═══ */
+.record-table {
+  width: 100%; border-collapse: collapse;
+}
+.record-table th, .record-table td {
+  padding: 10px 14px; text-align: left; border-bottom: 1px solid #1e3a5f;
+  font-size: 13px;
+}
+.record-table th { color: #8b949e; font-weight: normal; }
+.record-table tr:hover { background: #161b2280; }
+.status-badge {
+  padding: 2px 8px; border-radius: 10px; font-size: 11px;
+}
+.status-badge.completed { background: #00e67620; color: #00e676; }
+.status-badge.running { background: #00b0ff20; color: #00b0ff; }
+.status-badge.pending { background: #ff980020; color: #ff9800; }
+.status-badge.failed { background: #ff525220; color: #ff5252; }
+.inspect-strip {
+  display: grid; grid-template-columns: minmax(220px, 1.2fr) minmax(260px, 2fr) minmax(220px, 1fr);
+  gap: 10px; align-items: stretch; margin-bottom: 12px;
+}
+.inspect-box {
+  background: #0d1117; border: 1px solid #1e3a5f; border-radius: 8px; padding: 10px 12px;
+  min-height: 72px; font-size: 12px; color: #c9d1d9;
+}
+.inspect-box .label { color: #8b949e; margin-right: 6px; }
+.inspect-box .value { color: #e0e0e0; font-weight: 600; }
+.inspect-actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+
+
+/* 巡检记录 */
+.record-table{width:100%;border-collapse:collapse;font-size:13px}
+.record-table th{font-size:11px;color:#4a5568;text-transform:uppercase;letter-spacing:1px;font-weight:500}
+.record-table th,.record-table td{padding:14px 16px;text-align:left;border-bottom:1px solid #1e3a5f}
+.record-table tr:hover td{background:rgba(30,58,95,0.15)}
+.status-badge{display:inline-flex;align-items:center;gap:4px;font-size:11px;padding:3px 8px;border-radius:4px;border:1px solid}
+.status-badge.completed{background:rgba(0,230,118,0.12);color:#00e676;border-color:rgba(0,230,118,0.3)}
+.status-badge.pending{background:rgba(251,191,36,0.12);color:#fbbf24;border-color:rgba(251,191,36,0.3)}
+.status-badge.running{background:rgba(68,138,255,0.12);color:#448aff;border-color:rgba(68,138,255,0.3)}
+.view-path-btn{padding:3px 10px;border:1px solid rgba(0,176,255,0.4);border-radius:4px;background:transparent;color:#00b0ff;font-size:11px;cursor:pointer;transition:all 0.18s}
+.view-path-btn:hover{background:rgba(0,176,255,0.08)}
+
+/* 检测报告 */
+.report-main-card{display:flex;gap:0;background:linear-gradient(180deg,#0d1117,#111820);border:1px solid #1e3a5f;border-radius:10px;overflow:hidden;margin-bottom:16px;min-height:380px}
+.report-left{flex:1;padding:32px;min-width:0}
+.report-right{width:340px;min-width:340px;position:relative;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,rgba(0,230,118,0.03),rgba(0,176,255,0.03));border-left:1px solid rgba(0,230,118,0.08)}
+.report-svg-bg{width:100%;height:100%;position:absolute;top:0;left:0;opacity:0.13;animation:svg-breathe 4s ease-in-out infinite}
+@keyframes svg-breathe{0%,100%{opacity:0.13}50%{opacity:0.20}}
+.report-right-label{position:relative;z-index:1;display:flex;flex-direction:column;gap:10px;align-items:flex-end;padding:24px}
+.report-right-tag{font-size:11px;color:rgba(0,230,118,0.5);letter-spacing:2px;text-transform:uppercase;border:1px solid rgba(0,230,118,0.15);border-radius:4px;padding:4px 10px}
+.report-sec-label{font-size:11px;color:#4a5568;text-transform:uppercase;letter-spacing:2px;margin-bottom:16px;padding-bottom:8px;border-bottom:1px solid rgba(30,58,95,0.4)}
+.disease-status{display:flex;flex-direction:column;align-items:flex-start;gap:4px;padding:16px;border:1px solid rgba(30,58,95,0.5);border-radius:8px;margin-bottom:16px;background:rgba(10,14,39,0.4);transition:border-color 0.3s}
+.disease-status.warn{border-color:rgba(255,82,82,0.3);background:rgba(255,82,82,0.04)}
+.disease-status.ok{border-color:rgba(0,230,118,0.2);background:rgba(0,230,118,0.03)}
+.disease-icon{font-size:24px;margin-bottom:4px}
+.disease-text{font-size:14px;font-weight:600;color:#e0e0e0}
+.disease-sub{font-size:12px;color:#8b949e;margin-top:2px}
+.disease-time{font-size:11px;color:#555;margin-top:4px}
+.alert-list{overflow-y:auto}
+.alert-item{display:flex;align-items:flex-start;gap:8px;padding:8px 10px;border:1px solid rgba(30,58,95,0.4);border-radius:5px;margin-bottom:6px;font-size:12px}
+.alert-item.danger{border-color:rgba(255,82,82,0.25);background:rgba(255,82,82,0.03)}
+.alert-time{color:#555;white-space:nowrap;font-size:11px;margin-top:1px}
+.report-ai-card{background:linear-gradient(180deg,#0d1117,#111820);border:1px solid #1e3a5f;border-radius:10px;padding:32px}
+.report-ai-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 0}
+.report-ai-icon{font-size:40px;margin-bottom:12px;animation:pulse-on 2s ease-in-out infinite}
+.ai-report-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px;flex-wrap:wrap}
+.ai-meta-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.ai-meta-chip{font-size:11px;color:#8b949e;background:rgba(68,138,255,0.08);border:1px solid rgba(68,138,255,0.22);border-radius:4px;padding:4px 8px}
+.ai-meta-chip.online{color:#00e676;background:rgba(0,230,118,0.08);border-color:rgba(0,230,118,0.24)}
+.ai-meta-chip.fallback{color:#fbbf24;background:rgba(251,191,36,0.08);border-color:rgba(251,191,36,0.24)}
+.ai-content{font-size:13px;color:#c9d1d9;line-height:1.8;white-space:pre-wrap;background:rgba(10,14,39,0.5);border:1px solid rgba(30,58,95,0.4);border-radius:6px;padding:16px}
+.ai-btn{margin-top:10px;padding:11px 0;width:100%;max-width:280px;border:none;border-radius:6px;background:#00e676;color:#0a0e27;font-size:14px;font-weight:700;cursor:pointer;transition:all 0.25s;letter-spacing:1px}
+.ai-btn:hover{background:#00f07e;box-shadow:0 0 20px rgba(0,230,118,0.45)}
+.ai-btn:disabled{opacity:0.45;cursor:not-allowed;box-shadow:none}
+
+/* 设置页 */
+.settings-section{background:#0d1117;border:1px solid #1e3a5f;border-radius:8px;padding:28px 32px;margin-bottom:16px}
+.settings-title{font-size:13px;font-weight:600;color:#e0e0e0;margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid #1e3a5f}
+.settings-row{display:flex;align-items:center;gap:16px;margin-bottom:14px;flex-wrap:wrap}
+.settings-label{width:140px;font-size:13px;color:#8b949e;flex-shrink:0}
+.settings-input{flex:1;min-width:200px;padding:8px 12px;background:#0a0e27;border:1px solid #1e3a5f;border-radius:5px;color:#c9d1d9;font-size:13px;outline:none;transition:border-color 0.2s}
+.settings-input:focus{border-color:rgba(0,230,118,0.4)}
+.settings-save{padding:10px 28px;border:none;border-radius:5px;background:#00e676;color:#0a0e27;font-size:13px;font-weight:700;cursor:pointer;margin-top:8px;transition:all 0.2s}
+.settings-save:hover{background:#00f07e;box-shadow:0 0 15px rgba(0,230,118,0.35)}
+.settings-note{font-size:12px;color:#6b7280;line-height:1.6;margin:-4px 0 16px}
+.threshold-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px}
+.threshold-card{border:1px solid rgba(30,58,95,0.65);border-radius:7px;background:rgba(10,14,39,0.35);padding:16px}
+.threshold-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}
+.threshold-name{font-size:14px;font-weight:600;color:#e0e0e0}
+.threshold-device{font-size:11px;color:#6b7280;margin-top:3px}
+.threshold-fields{display:grid;grid-template-columns:1fr 1fr;gap:10px 12px}
+.threshold-field label{display:block;font-size:12px;color:#8b949e;margin-bottom:6px}
+.threshold-field .settings-input{width:100%;min-width:0}
+.threshold-actions{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:14px}
+.settings-check{display:flex;align-items:center;gap:7px;font-size:12px;color:#8b949e;white-space:nowrap}
+.settings-check input{accent-color:#00e676}
+.settings-msg{font-size:12px;color:#00e676}
+
+/* 通用 */
+.empty-state{text-align:center;padding:60px 20px;color:#4a5568;font-size:13px}
+.sep{color:#1e3a5f}
+.tag{display:inline-flex;align-items:center;padding:2px 8px;border-radius:4px;font-size:11px;border:1px solid}
+.tag-green{color:#00e676;border-color:rgba(0,230,118,0.3);background:rgba(0,230,118,0.06)}
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:#0a0e27}
+::-webkit-scrollbar-thumb{background:#1e3a5f;border-radius:3px}
+
+/* Dashboard ratio fix: keep control console as two columns after legacy map CSS restore. */
+.dashboard{display:grid;grid-template-columns:minmax(560px,37%) minmax(0,1fr);grid-template-rows:1fr;gap:12px;padding:12px;height:100%;width:100%;min-width:0}
+.dashboard .video-panel{grid-column:1;grid-row:1;display:flex;flex-direction:column;gap:10px;min-width:0}
+.dashboard .chart-area{grid-column:2;grid-row:1;display:flex;flex-direction:column;gap:12px;min-width:0}
+.dashboard .chart-card{min-width:0}
+
+/* Video empty state polish */
+.monitor-empty-shell{background:radial-gradient(circle at 50% 38%,rgba(0,230,118,0.08),transparent 34%),linear-gradient(180deg,#04070d,#070d16 58%,#05070c);border-color:rgba(0,230,118,0.22);box-shadow:inset 0 0 0 1px rgba(255,255,255,0.02),inset 0 0 46px rgba(0,0,0,0.7)}
+.monitor-empty-shell.is-live{background:#000;border-color:#1e3a5f;box-shadow:none}
+.video-empty-state{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;overflow:hidden;background:linear-gradient(180deg,rgba(2,6,14,0.96),rgba(5,11,20,0.98));color:#8b949e}
+.video-scan-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(0,230,118,0.045) 1px,transparent 1px),linear-gradient(90deg,rgba(0,176,255,0.035) 1px,transparent 1px);background-size:38px 38px;mask-image:radial-gradient(circle at center,#000 0%,transparent 78%)}
+.video-empty-state::before{content:"";position:absolute;left:-20%;right:-20%;height:90px;top:18%;background:linear-gradient(180deg,transparent,rgba(0,230,118,0.08),transparent);animation:video-scan-move 3.6s linear infinite}
+.video-empty-state::after{content:"";position:absolute;inset:18px;border:1px solid rgba(0,230,118,0.13);border-radius:8px;pointer-events:none}
+@keyframes video-scan-move{0%{transform:translateY(-150px)}100%{transform:translateY(420px)}}
+.video-corners i{position:absolute;width:26px;height:26px;border-color:rgba(0,230,118,0.55)}
+.video-corners i:nth-child(1){left:18px;top:18px;border-left:2px solid;border-top:2px solid}.video-corners i:nth-child(2){right:18px;top:18px;border-right:2px solid;border-top:2px solid}.video-corners i:nth-child(3){left:18px;bottom:18px;border-left:2px solid;border-bottom:2px solid}.video-corners i:nth-child(4){right:18px;bottom:18px;border-right:2px solid;border-bottom:2px solid}
+.video-empty-core{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;max-width:360px;padding:22px;text-align:center}
+.video-lens{width:76px;height:76px;border-radius:50%;display:grid;place-items:center;margin-bottom:16px;background:linear-gradient(145deg,rgba(0,230,118,0.13),rgba(0,176,255,0.06));border:1px solid rgba(0,230,118,0.32);box-shadow:0 0 26px rgba(0,230,118,0.14)}
+.video-lens span{width:34px;height:34px;border-radius:50%;border:2px solid rgba(0,230,118,0.75);box-shadow:inset 0 0 12px rgba(0,230,118,0.25),0 0 12px rgba(0,230,118,0.18);position:relative}
+.video-lens span::after{content:"";position:absolute;width:7px;height:7px;border-radius:50%;right:6px;top:6px;background:#00e676;box-shadow:0 0 10px #00e676}
+.video-empty-title{font-size:16px;font-weight:700;color:#e5edf7;letter-spacing:.5px;margin-bottom:8px}
+.video-empty-sub{font-size:12px;line-height:1.7;color:#7f8da3;margin-bottom:14px}
+.video-empty-meta{display:flex;align-items:center;gap:8px;margin-bottom:16px;font-size:11px;letter-spacing:1px;color:#52647c}.video-empty-meta b{color:#00e676;font-weight:700}
+.video-retry-btn{height:30px;padding:0 18px;border:1px solid rgba(0,230,118,0.45);border-radius:5px;background:rgba(0,230,118,0.08);color:#00e676;font-size:12px;font-weight:600;cursor:pointer;transition:all .18s}
+.video-retry-btn:hover{background:rgba(0,230,118,0.16);box-shadow:0 0 18px rgba(0,230,118,0.16)}
+
+/* Patrol records page */
+.records-page{height:100%;min-height:0;overflow-y:auto;padding:16px 20px}
+.records-wrap{max-width:1280px;min-height:100%;display:flex;flex-direction:column}
+.records-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}
+.records-title{margin-bottom:0;flex:1}
+.records-table-wrap{flex:1;min-height:0;overflow:auto;background:linear-gradient(180deg,#0d1117,#111820);border:1px solid #1e3a5f;border-radius:8px}
+.records-table-wrap .record-table th{position:sticky;top:0;background:#0d1117;z-index:1}
+.records-table-wrap .record-table th:last-child,.records-table-wrap .record-table td:last-child{width:auto}
+.records-head .btn:disabled{opacity:.45;cursor:not-allowed}
+.record-result-btn{padding:4px 10px;border:1px solid rgba(0,230,118,.35);border-radius:4px;background:rgba(0,230,118,.08);color:#00e676;font-size:12px;cursor:pointer}
+.record-result-btn.no-images{border-color:rgba(255,193,7,.45);background:rgba(255,193,7,.08);color:#ffc107}
+.record-result-btn:disabled{border-color:#1e3a5f;background:transparent;color:#4a5568;cursor:not-allowed}
+.inspect-modal-mask{position:fixed;inset:52px 0 0;background:rgba(0,0,0,.62);z-index:80;display:flex;align-items:center;justify-content:center;padding:24px}
+.inspect-modal{width:min(1080px,92vw);max-height:84vh;overflow:auto;background:linear-gradient(180deg,#0d1117,#111820);border:1px solid #1e3a5f;border-radius:8px;box-shadow:0 22px 70px rgba(0,0,0,.42)}
+.inspect-modal-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 18px;border-bottom:1px solid #1e3a5f}
+.inspect-modal-title{font-size:16px;font-weight:600;color:#00e676}
+.inspect-modal-close{border:1px solid #1e3a5f;background:transparent;color:#8b949e;border-radius:5px;padding:4px 10px;cursor:pointer}
+.inspect-modal-body{padding:18px;display:grid;grid-template-columns:minmax(260px,420px) 1fr;gap:18px}
+.inspect-image-list{display:flex;flex-direction:column;gap:12px}
+.inspect-image-list img{width:100%;max-height:320px;object-fit:contain;background:#05070c;border:1px solid #1e3a5f;border-radius:6px}
+.inspect-image-empty{color:#8b949e;text-align:center;padding:34px 18px;border:1px solid #1e3a5f;border-radius:6px;background:rgba(30,58,95,.08);line-height:1.7}
+.inspect-image-warning{color:#ffc107;font-size:12px;margin-top:8px}
+.inspect-detail-grid{display:grid;grid-template-columns:90px 1fr;gap:8px 12px;font-size:13px;margin-bottom:14px}
+.inspect-detail-grid .label{color:#4a5568}.inspect-detail-grid .value{color:#c9d1d9;word-break:break-all}
+.inspect-result-summary{border:1px solid rgba(30,58,95,.7);border-radius:6px;padding:12px;margin-bottom:12px;background:rgba(30,58,95,.12);font-size:13px;line-height:1.65;color:#c9d1d9}
+.inspect-json{white-space:pre-wrap;word-break:break-all;max-height:320px;overflow:auto;background:#080b12;border:1px solid #1e3a5f;border-radius:6px;padding:12px;color:#8b949e;font-size:12px;line-height:1.55}
+@media(max-width:900px){.inspect-modal-body{grid-template-columns:1fr}.inspect-modal-mask{align-items:flex-start;padding:12px}.inspect-modal{max-height:90vh}}
+
+/* Page scroll fix */
+.page-inner{flex:1;min-height:0;height:100%;overflow-y:auto;padding:20px}
+.page-content-wrap{width:100%}
+.records-page{height:100%;min-height:0;overflow-y:auto}
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<script>
+const {createApp,ref,reactive,computed,onMounted,onUnmounted,watch,nextTick} = Vue;
+const {createRouter,createWebHashHistory} = VueRouter;
+const ELF2_VIDEO_URL = '/ws/video/watch';
+
+/* 全局状态 */
+const globalState = reactive({
+  wsConnected:false, mqttConnected:false, robotConnected:false, videoPusherConnected:false,
+  latestSensor:{}, zoneSensors:{A:{},B:{}}, zones:[], selected\u56ed\u533aId:0,
+  robot\u72b6\u6001:{battery:0,position_x:0,position_y:0,position_theta:0,state:'offline'},
+  latestDetection:null, unreadDetections:0, alerts:[],
+  diseaseStats:{}, latestAnalysis:'', sensorHistory:[],
+  esp32Online:{}, patrolRefreshSignal:0,
+  nav\u72b6\u6001:{active:false,result:'',distanceRemaining:0},
+  wpProgress:{active:false,current:0,total:0},
+  nav2Ready:false, tfReady:false, amcl:null,
+  inspection:{active:false,taskId:null,region:'',stage:'idle',detail:'',success:null,message:''},
+  inspect\u72b6\u6001:{active:false,region:'',task_id:'',stage:'idle',detail:'',success:null,message:'',result_json:''},
+  scheduler:{state:'idle',queue:[],current:null,last_event:null,home_pose:{x:1.93,y:0.0696,yaw:0},sensor_auto_dispatch:true},
+  btOps:{camera:'idle',mission:'idle',video:'idle',topics:[],lastCommand:'',lastMessage:'',summary:'unknown',updatedAt:''},
+  opsChecks:[],
+});
+
+/* 传感器数据 */
+const MAX_POINTS=60;
+const AGRI_LIMITS={
+  humidity:{healthyMin:60,healthyMax:80,drought:50,wet:85},
+  light:{healthyMin:40,healthyMax:70,low:20}
+};
+const DEVICE_ZONE_MAP={esp32_001:'A',esp32_s3_B001:'B'};
+const zoneSeries={
+  A:{labels:[],humidity:[],light:[]},
+  B:{labels:[],humidity:[],light:[]},
+};
+const zoneSampleBuf={
+  A:{n:0,h:0,l:0},
+  B:{n:0,h:0,l:0},
+};
+const zoneCharts={A:null,B:null};
+
+function normalizeRobot\u72b6\u6001(data){
+  const d=data||{};
+  return {
+    ...globalState.robot\u72b6\u6001,
+    ...d,
+    battery:Number(d.battery ?? globalState.robot\u72b6\u6001.battery ?? 0),
+    position_x:Number(d.position_x ?? d.x ?? globalState.robot\u72b6\u6001.position_x ?? 0),
+    position_y:Number(d.position_y ?? d.y ?? globalState.robot\u72b6\u6001.position_y ?? 0),
+    position_theta:Number(d.position_theta ?? d.theta ?? d.yaw ?? globalState.robot\u72b6\u6001.position_theta ?? 0),
+    state:d.state || globalState.robot\u72b6\u6001.state || 'offline'
+  };
+}
+
+function yRange(arr){
+  if(!arr.length) return {min:undefined,max:undefined};
+  const mn=Math.min(...arr),mx=Math.max(...arr);
+  const pad=(mx-mn)*0.25||1;
+  return {min:parseFloat((mn-pad).toFixed(2)),max:parseFloat((mx+pad).toFixed(2))};
+}
+function resolveSensorRegion(d){
+  const region=String(d.region||'').trim().toUpperCase();
+  if(region==='A'||region==='B') return region;
+  return DEVICE_ZONE_MAP[d.device_id]||'A';
+}
+function normalizeLightPercent(light){
+  const value=Number(light||0);
+  return Math.max(0,Math.min(100,Math.round(value)));
+}
+function sensor\u72b6\u6001(sensor){
+  const h=Number(sensor.humidity||0),l=normalizeLightPercent(sensor.light);
+  if(h<AGRI_LIMITS.humidity.drought) return {state:'warn',text:'干旱预警',message:'土壤湿度低于 50%，建议检查灌溉。'};
+  if(h>AGRI_LIMITS.humidity.wet) return {state:'warn',text:'过湿预警',message:'土壤湿度高于 85%，存在沤根和真菌风险。'};
+  if(l<AGRI_LIMITS.light.low) return {state:'warn',text:'弱光预警',message:'光照低于 20%，建议评估补光。'};
+  if(h>=AGRI_LIMITS.humidity.healthyMin&&h<=AGRI_LIMITS.humidity.healthyMax&&l>=AGRI_LIMITS.light.healthyMin&&l<=AGRI_LIMITS.light.healthyMax) return {state:'ok',text:'适宜',message:'湿度和光照均处于草莓适宜生长区间。'};
+  return {state:'ok',text:'观察',message:'数据接近适宜区间，继续观察趋势。'};
+}
+function push\u56ed\u533aSensorPointNow(region,humi,light,label){
+  const series=zoneSeries[region];if(!series) return;
+  const t=label||new Date().toLocaleTimeString('zh-CN',{hour12:false,hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  series.labels.push(t);
+  series.humidity.push(+Number(humi||0).toFixed(1));
+  series.light.push(normalizeLightPercent(light));
+  if(series.labels.length>MAX_POINTS){series.labels.shift();series.humidity.shift();series.light.shift();}
+  update\u56ed\u533aChart(region);
+}
+function update\u56ed\u533aChart(region){
+  const chart=zoneCharts[region],series=zoneSeries[region];
+  if(!chart||!series) return;
+  chart.setOption({xAxis:{data:[...series.labels]},series:[{data:[...series.humidity]},{data:[...series.light]}]});
+}
+function hydrate\u56ed\u533aSensorHistory(region,history){
+  if(!Array.isArray(history)) return;
+  const series=zoneSeries[region];if(!series) return;
+  series.labels.length=0;series.humidity.length=0;series.light.length=0;
+  history.slice(-MAX_POINTS).forEach(item=>{
+    const dt=item.created_at?new Date(String(item.created_at).replace(' ','T')):null;
+    const label=dt&&!Number.isNaN(dt.getTime())?dt.toLocaleTimeString('zh-CN',{hour12:false,hour:'2-digit',minute:'2-digit',second:'2-digit'}):'';
+    push\u56ed\u533aSensorPointNow(region,Number(item.humidity||0),Number(item.light||0),label);
+  });
+}
+async function load\u56ed\u533aSensorData(){
+  const pairs=[['A',1],['B',2]];
+  await Promise.all(pairs.map(async([region,id])=>{
+    try{
+      const r=await fetch(`/api/zones/${id}`);
+      const d=await r.json();
+      if(d.zone?.latest_sensor){
+        const latest={...d.zone.latest_sensor,region};
+        globalState.zoneSensors[region]=latest;
+        if(region==='A') globalState.latestSensor=latest;
+      }
+      hydrate\u56ed\u533aSensorHistory(region,d.zone?.sensor_history||[]);
+    }catch(e){}
+  }));
+}
+function push\u56ed\u533aSensorPoint(region,humi,light){
+  const buf=zoneSampleBuf[region];if(!buf) return;
+  buf.n++;buf.h+=(humi||0);buf.l+=(light||0);
+  if(buf.n<3) return;
+  const n=buf.n;
+  humi=buf.h/n;light=buf.l/n;
+  zoneSampleBuf[region]={n:0,h:0,l:0};
+  const t=new Date().toLocaleTimeString('zh-CN',{hour12:false,hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  push\u56ed\u533aSensorPointNow(region,humi,light,t);
+}
+
+/* WebSocket */
+let ws=null;
+function connectWS(){
+  const proto=location.protocol==='https:'?'wss':'ws';
+  ws=new WebSocket(`${proto}://${location.host}/ws`);
+  ws.onopen=()=>{globalState.wsConnected=true;};
+  ws.onclose=()=>{globalState.wsConnected=false;globalState.robotConnected=false;setTimeout(connectWS,3000);};
+  ws.onerror=()=>ws.close();
+  ws.onmessage=e=>{
+    try{
+      const msg=JSON.parse(e.data);
+      if(msg.type==='sensor_data'||msg.type==='sensor'||msg.type==='sensor_update'){
+        const d=msg.data||msg;
+        const region=resolveSensorRegion(d);
+        d.region=region;
+        globalState.latestSensor=d;
+        globalState.zoneSensors[region]=d;
+        if(d.device_id) globalState.esp32Online[d.device_id]=Date.now();
+        push\u56ed\u533aSensorPoint(region,d.humidity,d.light);
+      } else if(msg.type==='esp32_status'){
+        const d=msg.data||{};
+        if(d.device_id) globalState.esp32Online[d.device_id]=d.online?Date.now():0;
+      } else if(msg.type==='robot_status'||msg.type==='status'){
+        globalState.robot\u72b6\u6001=normalizeRobot\u72b6\u6001(msg.data||msg);
+        globalState.robotConnected=true;
+      } else if(msg.type==='robot_connected'){
+        globalState.robotConnected=true;
+      } else if(msg.type==='robot_disconnected'){
+        globalState.robotConnected=false;
+      } else if(msg.type==='mqtt_status'){
+        globalState.mqttConnected=msg.data?.connected||false;
+      } else if(msg.type==='new_detection'||msg.type==='disease_alert'){
+        globalState.latestDetection=msg.data;
+        globalState.unreadDetections++;
+        if(msg.data?.disease_count>0){
+          globalState.alerts.unshift({
+            time:msg.data.time||new Date().toLocaleTimeString(),
+            title:'病害告警',
+            message:`发现 ${msg.data.result||'未知病害'} ${msg.data.disease_count} 处`,
+            level:'danger'
+          });
+          if(globalState.alerts.length>50) globalState.alerts.pop();
+        }
+      } else if(msg.type==='nav_feedback'){
+        if(msg.data) globalState.nav\u72b6\u6001={active:true,...msg.data,distanceRemaining:Number(msg.data.distanceRemaining ?? 0)};
+      } else if(msg.type==='nav_complete'){
+        globalState.nav\u72b6\u6001={active:false,result:msg.data?.result||'completed',distanceRemaining:0};
+      } else if(msg.type==='nav_ready'){
+        globalState.nav2Ready=msg.data?.ready||false;
+      } else if(msg.type==='waypoint_feedback'){
+        if(msg.data) globalState.wpProgress={active:true,...msg.data};
+      } else if(msg.type==='patrol_completed'){
+        globalState.patrolRefreshSignal++;
+        globalState.wpProgress={active:false,current:0,total:0};
+      } else if(msg.type==='inspection_task_created'){
+        const d=msg.data||{};
+        globalState.inspection={active:!!d.sent,taskId:d.task_id||d.cloud_task_id,region:d.region||'',stage:d.sent?'sent':'pending',detail:d.sent?'sent to robot':'robot bridge offline',success:null,message:''};
+        Object.assign(globalState.inspect\u72b6\u6001,{active:!!d.sent,task_id:d.task_id||d.cloud_task_id||'',region:d.region||'',stage:d.sent?'sent':'pending',detail:d.sent?'sent to robot':'robot bridge offline',success:null,message:''});
+        globalState.patrolRefreshSignal++;
+      } else if(msg.type==='inspection_feedback'){
+        const d=msg.data||{};
+        globalState.inspection={...globalState.inspection,active:true,taskId:d.cloud_task_id||d.task_id||globalState.inspection.taskId,region:d.region||globalState.inspection.region,stage:d.stage||'running',detail:d.detail||'',success:null,message:''};
+        Object.assign(globalState.inspect\u72b6\u6001,{active:true,task_id:d.cloud_task_id||d.task_id||globalState.inspect\u72b6\u6001.task_id,region:d.region||globalState.inspect\u72b6\u6001.region,stage:d.stage||'running',detail:d.detail||'',success:null,message:''});
+      } else if(msg.type==='inspection_result'){
+        const d=msg.data||{};
+        globalState.inspection={...globalState.inspection,active:false,taskId:d.cloud_task_id||d.task_id||globalState.inspection.taskId,region:d.region||globalState.inspection.region,stage:d.success?'completed':'failed',detail:d.message||'',success:!!d.success,message:d.message||''};
+        Object.assign(globalState.inspect\u72b6\u6001,{active:false,task_id:d.cloud_task_id||d.task_id||globalState.inspect\u72b6\u6001.task_id,region:d.region||globalState.inspect\u72b6\u6001.region,stage:d.success?'done':'failed',detail:d.message||'',success:!!d.success,message:d.message||''});
+        globalState.patrolRefreshSignal++;
+      } else if(msg.type==='inspect_started'){
+        const d=msg.data||{};
+        Object.assign(globalState.inspect\u72b6\u6001,{active:true,task_id:d.task_id||globalState.inspect\u72b6\u6001.task_id,region:d.region||globalState.inspect\u72b6\u6001.region,stage:'started',detail:'任务已启动',success:null,message:''});
+      } else if(msg.type==='inspect_feedback'){
+        const d=msg.data||{};
+        Object.assign(globalState.inspect\u72b6\u6001,{active:true,task_id:d.task_id||globalState.inspect\u72b6\u6001.task_id,region:d.region||globalState.inspect\u72b6\u6001.region,stage:d.stage||'running',detail:d.detail||'',success:null,message:''});
+      } else if(msg.type==='inspect_complete'){
+        const d=msg.data||{};
+        Object.assign(globalState.inspect\u72b6\u6001,{active:false,task_id:d.task_id||globalState.inspect\u72b6\u6001.task_id,region:d.region||globalState.inspect\u72b6\u6001.region,stage:'done',detail:d.message||'完成',success:true,message:d.message||'完成',result_json:d.result_json||''});
+        globalState.patrolRefreshSignal++;
+      } else if(msg.type==='inspect_failed'||msg.type==='inspect_busy'){
+        const d=msg.data||{};
+        Object.assign(globalState.inspect\u72b6\u6001,{active:false,task_id:d.task_id||globalState.inspect\u72b6\u6001.task_id,region:d.region||globalState.inspect\u72b6\u6001.region,stage:'failed',detail:d.message||'失败',success:false,message:d.message||'失败',result_json:d.result_json||''});
+        globalState.patrolRefreshSignal++;
+      } else if(msg.type==='scheduler_status'){
+        globalState.scheduler=msg.data||globalState.scheduler;
+      } else if(msg.type==='scheduler_event'){
+        globalState.scheduler.last_event=msg.data||globalState.scheduler.last_event;
+        globalState.btOps.lastMessage=msg.data?.message||msg.data?.event||'scheduler event';
+      } else if(msg.type==='command_ack'){
+        const d=msg.data||{};
+        globalState.btOps.lastCommand=d.command||d.type||'';
+        globalState.btOps.lastMessage=d.message||d.status||'ack';
+        globalState.btOps.updatedAt=new Date().toLocaleTimeString();
+      } else if(msg.type==='camera_status'){
+        const d=msg.data||{};
+        globalState.btOps.camera=d.status||d.state||'unknown';
+        globalState.btOps.lastMessage=d.message||globalState.btOps.lastMessage;
+        globalState.btOps.updatedAt=new Date().toLocaleTimeString();
+      } else if(msg.type==='camera_topics'){
+        const d=msg.data||{};
+        globalState.btOps.topics=d.topics||[];
+        globalState.btOps.camera=d.ok?'topics_ok':'topics_missing';
+        globalState.btOps.lastMessage=d.message||globalState.btOps.lastMessage;
+        globalState.btOps.updatedAt=new Date().toLocaleTimeString();
+      } else if(msg.type==='video_status'){
+        const d=msg.data||{};
+        if(typeof d.pusher_connected==='boolean') globalState.videoPusherConnected=d.pusher_connected;
+        globalState.btOps.video=d.status||d.state||'unknown';
+        globalState.btOps.lastMessage=d.message||globalState.btOps.lastMessage;
+        globalState.btOps.updatedAt=new Date().toLocaleTimeString();
+      } else if(msg.type==='mission_status'){
+        const d=msg.data||{};
+        globalState.btOps.mission=d.status||d.state||'unknown';
+        globalState.btOps.lastMessage=d.message||globalState.btOps.lastMessage;
+        globalState.btOps.updatedAt=new Date().toLocaleTimeString();
+      } else if(msg.type==='system_status'){
+        const d=msg.data||{};
+        globalState.btOps.summary=d.summary||d.status||'unknown';
+        globalState.opsChecks=d.checks||[];
+        globalState.btOps.lastMessage=d.message||globalState.btOps.lastMessage;
+        globalState.btOps.updatedAt=new Date().toLocaleTimeString();
+      }
+    }catch(ex){}
+  };
+}
+
+/* 控制台页 */
+const DashboardPage={
+  template:`
+  <div style="flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column">
+    <div class="dashboard">
+      <div class="video-panel">
+        <div class="video-frame-box monitor-empty-shell" :class="videoLive ? 'is-live' : 'is-idle'">
+          <img ref="videoFrame" v-show="videoLive" :key="videoRetryToken" :src="videoFrameUrl" alt="ELF2 实时画面" @load="onVideoLoad" @error="onVideoError">
+          <div class="video-empty-state" v-if="!videoLive">
+            <div class="video-scan-grid"></div>
+            <div class="video-corners"><i></i><i></i><i></i><i></i></div>
+            <div class="video-empty-core">
+              <div class="video-lens">
+                <span></span>
+              </div>
+              <div class="video-empty-title">{{ videoTitle }}</div>
+              <div class="video-empty-sub">{{ videoSubtitle }}</div>
+              <div class="video-empty-meta">
+                <span>STREAM</span>
+                <b>{{ videoStreamState }}</b>
+              </div>
+              <button class="video-retry-btn" @click="retryVideo">重试连接</button>
+            </div>
+          </div>
+        </div>
+        <div class="video-status-bar">
+          <span><span class="video-live-dot" :class="globalState.videoPusherConnected ? 'on' : 'off'"></span>{{ videoStatusText }}</span>
+          <button class="btn" style="padding:3px 10px;font-size:11px" @click="retryVideo">重试视频</button>
+        </div>
+        <div class="robot-card">
+          <div class="robot-header">
+            <svg viewBox="0 0 32 32" width="22" height="22" fill="none">
+              <rect x="8" y="12" width="16" height="13" rx="2" stroke="#00e676" stroke-width="1.5"/>
+              <rect x="12" y="8" width="8" height="5" rx="1.5" stroke="#00e676" stroke-width="1.2"/>
+              <circle cx="13" cy="17" r="2" fill="#00e676" opacity="0.8"/>
+              <circle cx="19" cy="17" r="2" fill="#00e676" opacity="0.8"/>
+              <line x1="6" y1="16" x2="8" y2="16" stroke="#00e676" stroke-width="1.5"/>
+              <line x1="24" y1="16" x2="26" y2="16" stroke="#00e676" stroke-width="1.5"/>
+              <line x1="11" y1="25" x2="11" y2="28" stroke="#00e676" stroke-width="1.5"/>
+              <line x1="21" y1="25" x2="21" y2="28" stroke="#00e676" stroke-width="1.5"/>
+              <circle cx="16" cy="6" r="1.5" fill="#00e676"/>
+            </svg>
+            <span style="font-size:13px;font-weight:600;color:#e0e0e0">机器人状态</span>
+            <span class="robot-state-tag" :class="globalState.robotConnected?'online':'offline'">
+              {{globalState.robotConnected?globalState.robot\u72b6\u6001.state||'在线':'离线'}}
+            </span>
+          </div>
+          <div class="robot-stats">
+            <div class="robot-stat">电量 <span>{{globalState.robot\u72b6\u6001.battery||0}}%</span></div>
+            <div class="robot-stat">X <span>{{(globalState.robot\u72b6\u6001.position_x||0).toFixed(2)}}m</span></div>
+            <div class="robot-stat">Y <span>{{(globalState.robot\u72b6\u6001.position_y||0).toFixed(2)}}m</span></div>
+            <div class="robot-stat">Nav2 <span>{{globalState.nav2Ready?'就绪':'未就绪'}}</span></div>
+          </div>
+        </div>
+        <div class="zone-monitor-grid">
+          <div v-for="region in ['A','B']" :key="region" class="zone-monitor-card" :class="zone\u72b6\u6001(region).state">
+            <div class="zone-monitor-head">
+              <div class="zone-monitor-title">{{region}} 区</div>
+              <div class="zone-monitor-state" :class="zone\u72b6\u6001(region).state">{{zone\u72b6\u6001(region).text}}</div>
+            </div>
+            <div class="zone-metric-row">
+              <div class="zone-metric" :class="metricBad(region,'humidity')?'bad':''">
+                <div class="zone-metric-label">土壤湿度</div>
+                <div class="zone-metric-value">{{formatHumidity(region)}}<span class="sensor-unit">%</span></div>
+              </div>
+              <div class="zone-metric" :class="metricBad(region,'light')?'bad':''">
+                <div class="zone-metric-label">光照</div>
+                <div class="zone-metric-value">{{formatLight(region)}}<span class="sensor-unit">%</span></div>
+              </div>
+            </div>
+            <div class="zone-advice" :class="zone\u72b6\u6001(region).state">{{zone\u72b6\u6001(region).message}}</div>
+          </div>
+        </div>
+      </div>
+      <div class="chart-area">
+        <div class="chart-card">
+          <div class="chart-title">A 区湿度 / 光照 · 绿色带为草莓适宜区间</div>
+          <div ref="chartA" style="flex:1;min-height:0"></div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">B 区湿度 / 光照 · 绿色带为草莓适宜区间</div>
+          <div ref="chartB" style="flex:1;min-height:0"></div>
+        </div>
+      </div>
+    </div>
+  </div>`,
+  setup(){
+    const chartA=ref(null),chartB=ref(null);
+    const videoFrame=ref(null),videoLive=ref(false),videoError=ref(false),elf2VideoUrl=ref(ELF2_VIDEO_URL),videoFrameUrl=ref(''),videoRetryToken=ref(0);
+    let videoRetryTimer=null,videoStartupTimer=null,videoWs=null,lastVideoObjectUrl='';
+    const videoStatusText=computed(()=>videoLive.value?'ELF2 视频画面在线':(globalState.videoPusherConnected?'推流端已连接，等待画面':'视频推流未连接'));
+    const videoTitle=computed(()=>videoLive.value?'视频画面在线':(globalState.videoPusherConnected?'推流端已连接':'视频推流未连接'));
+    const videoSubtitle=computed(()=>globalState.videoPusherConnected?'云端已收到推流连接，正在等待有效图像帧。':'云端未检测到车端视频推流，请检查 video_push 会话和日志。');
+    const videoStreamState=computed(()=>videoLive.value?'LIVE':(globalState.videoPusherConnected?'CONNECTED':'OFFLINE'));
+    const xBase={type:'category',data:[],axisLine:{lineStyle:{color:'#1e3a5f55'}},axisTick:{show:false},axisLabel:{color:'#4a5568',fontSize:10,interval:'auto',formatter:v=>v?v.substring(0,5):''},splitLine:{show:false}};
+    const zoomY=[
+      {type:'inside',orient:'vertical',yAxisIndex:[0,1],zoomOnMouseWheel:true,filterMode:'none'},
+      {type:'inside',orient:'horizontal',xAxisIndex:[0],zoomOnMouseWheel:false,moveOnMouseMove:true,filterMode:'none'}
+    ];
+    function sensorFor(region){return globalState.zoneSensors[region]||{};}
+    function formatHumidity(region){return Number(sensorFor(region).humidity||0).toFixed(1);}
+    function formatLight(region){return normalizeLightPercent(sensorFor(region).light||0);}
+    function metricBad(region,type){
+      const s=sensorFor(region);
+      if(type==='humidity'){
+        const h=Number(s.humidity||0);
+        return h<AGRI_LIMITS.humidity.drought||h>AGRI_LIMITS.humidity.wet;
+      }
+      const l=normalizeLightPercent(s.light||0);
+      return l<AGRI_LIMITS.light.low;
+    }
+    function zone\u72b6\u6001(region){return sensor\u72b6\u6001(sensorFor(region));}
+    function clearVideoTimers(){
+      if(videoRetryTimer){clearTimeout(videoRetryTimer);videoRetryTimer=null;}
+      if(videoStartupTimer){clearTimeout(videoStartupTimer);videoStartupTimer=null;}
+    }
+    function closeVideoWs(){
+      if(videoWs){try{videoWs.close();}catch(e){} videoWs=null;}
+    }
+    function setVideoFrame(blob){
+      const url=URL.createObjectURL(blob);
+      const old=lastVideoObjectUrl;
+      lastVideoObjectUrl=url;
+      videoFrameUrl.value=url;
+      videoLive.value=true;
+      videoError.value=false;
+      if(old) setTimeout(()=>URL.revokeObjectURL(old),1000);
+    }
+    function retryVideo(){
+      clearVideoTimers();
+      closeVideoWs();
+      videoLive.value=false;
+      videoError.value=false;
+      videoRetryToken.value+=1;
+      const proto=location.protocol==='https:'?'wss':'ws';
+      const wsUrl=`${proto}://${location.host}${ELF2_VIDEO_URL}`;
+      try{
+        videoWs=new WebSocket(wsUrl);
+        videoWs.binaryType='blob';
+        videoWs.onmessage=e=>{
+          if(typeof e.data==='string'){
+            try{
+              const msg=JSON.parse(e.data);
+              if(msg.type==='pusher_status'){
+                globalState.videoPusherConnected=!!msg.live;
+                if(!msg.live) videoError.value=true;
+              }
+            }catch(err){}
+            return;
+          }
+          setVideoFrame(e.data);
+        };
+        videoWs.onerror=()=>{videoError.value=true;};
+        videoWs.onclose=()=>{videoLive.value=false;if(!videoRetryTimer){videoRetryTimer=setTimeout(()=>{videoRetryTimer=null;retryVideo();},1500);}};
+      }catch(e){
+        videoError.value=true;
+        if(!videoRetryTimer){videoRetryTimer=setTimeout(()=>{videoRetryTimer=null;retryVideo();},1500);}
+      }
+    }
+    function onVideoLoad(){
+      videoLive.value=true;
+      videoError.value=false;
+      if(videoRetryTimer){clearTimeout(videoRetryTimer);videoRetryTimer=null;}
+    }
+    function onVideoError(){
+      videoLive.value=false;
+      videoError.value=true;
+      if(!videoRetryTimer){videoRetryTimer=setTimeout(()=>{videoRetryTimer=null;retryVideo();},1500);}
+    }
+    function chartOption(region){
+      return {backgroundColor:'transparent',
+        tooltip:{trigger:'axis',backgroundColor:'#0d1117',borderColor:'#1e3a5f',textStyle:{color:'#c9d1d9',fontSize:11}},
+        legend:{top:4,left:'center',textStyle:{color:'#6b7280',fontSize:11},itemWidth:14,itemHeight:3,data:['湿度','光照']},
+        graphic:[
+          {type:'text',right:12,top:4,style:{text:'湿度适宜 60%-80%',fill:'#00e676',font:'11px Segoe UI, Microsoft YaHei, sans-serif'}},
+          {type:'text',right:12,top:22,style:{text:'光照适宜 40%-70%',fill:'#00b0ff',font:'11px Segoe UI, Microsoft YaHei, sans-serif'}}
+        ],
+        grid:{top:48,bottom:22,left:48,right:54},dataZoom:zoomY,xAxis:xBase,
+        yAxis:[
+          {type:'value',min:0,max:100,axisLine:{show:false},axisTick:{show:false},axisLabel:{color:'#4a5568',fontSize:10,formatter:v=>v+'%'},splitLine:{lineStyle:{color:'#1e3a5f33'}}},
+          {type:'value',min:0,max:100,axisLine:{show:false},axisTick:{show:false},axisLabel:{color:'#4a5568',fontSize:10,formatter:v=>v+'%'},splitLine:{show:false}}
+        ],
+        series:[
+          {name:'湿度',type:'line',smooth:0.35,yAxisIndex:0,data:[],symbol:'none',itemStyle:{color:'#00e676'},lineStyle:{color:'#00e676',width:1.6},
+            markArea:{silent:true,itemStyle:{color:'rgba(0,230,118,0.09)'},data:[[{yAxis:AGRI_LIMITS.humidity.healthyMin},{yAxis:AGRI_LIMITS.humidity.healthyMax}]]}},
+          {name:'光照',type:'line',smooth:0.35,yAxisIndex:1,data:[],symbol:'none',itemStyle:{color:'#00b0ff'},lineStyle:{color:'#00b0ff',width:1.6},
+            markArea:{silent:true,itemStyle:{color:'rgba(68,138,255,0.07)'},data:[[{yAxis:AGRI_LIMITS.light.healthyMin},{yAxis:AGRI_LIMITS.light.healthyMax}]]}}
+        ]};
+    }
+    onMounted(()=>{
+      zoneCharts.A=echarts.init(chartA.value,null,{renderer:'canvas'});
+      zoneCharts.B=echarts.init(chartB.value,null,{renderer:'canvas'});
+      zoneCharts.A.setOption(chartOption('A'));
+      zoneCharts.B.setOption(chartOption('B'));
+      retryVideo();
+      videoStartupTimer=setTimeout(()=>retryVideo(),800);
+      const ro=new ResizeObserver(()=>{zoneCharts.A&&zoneCharts.A.resize();zoneCharts.B&&zoneCharts.B.resize();});
+      ro.observe(chartA.value);ro.observe(chartB.value);
+      onUnmounted(()=>{ro.disconnect();clearVideoTimers();closeVideoWs();if(lastVideoObjectUrl) URL.revokeObjectURL(lastVideoObjectUrl);if(videoFrame.value) videoFrame.value.removeAttribute("src");elf2VideoUrl.value="";videoFrameUrl.value="";videoLive.value=false;});
+    });
+    return{globalState,chartA,chartB,videoFrame,videoLive,videoError,elf2VideoUrl,videoFrameUrl,videoRetryToken,videoStatusText,videoTitle,videoSubtitle,videoStreamState,retryVideo,onVideoLoad,onVideoError,formatHumidity,formatLight,metricBad,zone\u72b6\u6001};
+  }
+};
+
+/* 园区管理页 */
+const \u56ed\u533asPage={
+  template:`
+  <div class="page-inner">
+    <div class="page-content-wrap">
+      <div class="page-title">园区管理</div>
+      <div style="margin-bottom:16px"><button class="btn btn-green" @click="showAdd=true">+ 新建园区</button></div>
+      <div class="zones-grid" v-if="globalState.zones.length>0">
+        <div class="zone-card" v-for="z in globalState.zones" :key="z.id">
+          <div class="zone-name">{{z.name}}</div>
+          <div class="zone-meta">{{z.description || z.name}}</div>
+          <div class="zone-meta">ESP32: {{formatDeviceId(z.esp32_device_id)}}</div>
+          <div class="zone-sensor-line" v-if="isFreshSensor(z.latest_sensor)">
+            <span class="zone-sensor-humi">土壤湿度 {{formatMetric(z.latest_sensor,'humidity','--')}}%</span>
+            <span class="zone-sensor-light">光照 {{formatMetric(z.latest_sensor,'light','--')}}%</span>
+          </div>
+          <div class="zone-meta" v-else>暂无实时传感器数据</div>
+        </div>
+      </div>
+      <div class="empty-state" v-else>暂无园区，点击"新建园区"开始配置</div>
+      <div v-if="showAdd" style="position:fixed;inset:0;background:rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;z-index:100">
+        <div style="background:#0d1117;border:1px solid #1e3a5f;border-radius:10px;padding:28px;min-width:320px">
+          <div style="font-size:14px;font-weight:600;color:#e0e0e0;margin-bottom:16px">新建园区</div>
+          <input class="settings-input" v-model="newName" placeholder="园区名称" style="width:100%;margin-bottom:16px">
+          <div style="display:flex;gap:8px;justify-content:flex-end">
+            <button class="btn btn-gray" @click="showAdd=false;newName=''">取消</button>
+            <button class="btn btn-green" @click="add\u56ed\u533a">创建</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>`,
+  setup(){
+    const showAdd=ref(false),newName=ref('');
+    async function load\u56ed\u533as(){try{const r=await fetch('/api/zones');const d=await r.json();globalState.zones=d.zones||d||[];}catch(e){}}
+    async function add\u56ed\u533a(){if(!newName.value.trim())return;try{await fetch('/api/zones',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:newName.value})});newName.value='';showAdd.value=false;await load\u56ed\u533as();}catch(e){}}
+    async function delete\u56ed\u533a(id){if(!confirm('确认删除？'))return;try{await fetch(`/api/zones/${id}`,{method:'DELETE'});await load\u56ed\u533as();}catch(e){}}
+    function select\u56ed\u533a(z){globalState.selected\u56ed\u533aId=z.id;}
+    function edit\u56ed\u533a(){}
+    function formatDeviceId(id){return id||'未绑定';}
+    function formatMetric(sensor,key,fallback){
+      const v=sensor&&sensor[key];
+      if(v===undefined||v===null||v==='') return fallback;
+      const n=Number(v);
+      if(Number.isNaN(n)) return fallback;
+      return key==='light'?Math.round(n):n.toFixed(1);
+    }
+    function isFreshSensor(sensor){
+      if(!sensor||!sensor.created_at) return false;
+      const ts=new Date(String(sensor.created_at).replace(' ','T')).getTime();
+      if(Number.isNaN(ts)||Date.now()-ts>60000) return false;
+      const humi=Number(sensor.humidity), light=Number(sensor.light);
+      return humi>=0&&humi<=100&&light>=0&&light<=100;
+    }
+    onMounted(load\u56ed\u533as);
+    return{globalState,showAdd,newName,add\u56ed\u533a,delete\u56ed\u533a,select\u56ed\u533a,edit\u56ed\u533a,formatDeviceId,formatMetric,isFreshSensor};
+  }
+};
+
+/* 地图规划页 */
+const MapPage = {
+  template: `
+  <div class="page-inner">
+    <h2 class="page-title">地图与路径规划</h2>
+    <div class="map-toolbar">
+      <button class="btn" @click="loadMap">加载地图</button>
+      <button class="btn" :class="{ active: mode === 'draw' }" @click="toggleDraw">{{ mode === 'draw' ? '停止绘制' : '绘制路径' }}</button>
+      <button class="btn" :class="{ active: mode === 'nav' }" @click="toggleNav" style="background:#1a3a1a;border-color:#00e676;">{{ mode === 'nav' ? '退出导航' : '导航模式' }}</button>
+      <button class="btn" :class="{ active: mode === 'set_pose' }" @click="toggleSetPose" style="background:#1a1a3a;border-color:#448aff;">{{ mode === 'set_pose' ? '取消设姿' : '设置位姿' }}</button>
+      <button class="btn" @click="clearPath">清除路径</button>
+      <div class="map-scope-chip">园区地图：整张地图</div>
+      <div v-if="showSaveForm" class="save-form-inline">
+        <input v-model="savePathName" placeholder="路径名称" @keyup.enter="doSavePath">
+        <button class="btn" @click="doSavePath">确定</button>
+        <button class="btn btn-danger" @click="showSaveForm=false">取消</button>
+      </div>
+      <button v-else class="btn" @click="startSave">保存路径</button>
+      <button class="btn" @click="sendPatrol">执行多点导航</button>
+      <button class="btn" @click="startInspectRegion('A')" :disabled="globalState.inspect\u72b6\u6001.active">巡检 A 区</button>
+      <button class="btn" @click="startInspectRegion('B')" :disabled="globalState.inspect\u72b6\u6001.active">巡检 B 区</button>
+      <button class="btn" @click="sendRandomPatrol">随机抽巡</button>
+      <button class="btn" @click="showUpload=!showUpload; if(showUpload){ scanFolder(); refreshRegisteredMaps(); }">{{ showUpload ? '关闭地图管理' : '地图管理' }}</button>
+      <input type="file" ref="fileInput" accept=".png,.pgm,.jpg,.pbm,.ppm" style="display:none" @change="onFileSelected">
+      <input type="file" ref="yamlInput" accept=".yaml,.yml" style="display:none" @change="selectedYamlName=$event.target.files[0]?.name||''">
+    </div>
+    <div class="inspect-strip">
+      <div class="inspect-box inspect-actions">
+        <button class="btn" @click="startInspectRegion('A')" :disabled="globalState.inspect\u72b6\u6001.active">巡检 A 区</button>
+        <button class="btn" @click="startInspectRegion('B')" :disabled="globalState.inspect\u72b6\u6001.active">巡检 B 区</button>
+        <button class="btn" @click="resetAnomalyCooldown">清除任务冷却</button>
+      </div>
+      <div class="inspect-box">
+        <div><span class="label">任务</span><span class="value">{{ globalState.inspect\u72b6\u6001.task_id || '-' }}</span></div>
+        <div><span class="label">区域</span><span class="value">{{ globalState.inspect\u72b6\u6001.region || '-' }}</span></div>
+        <div><span class="label">阶段</span><span class="value">{{ inspectStageLabel }}</span></div>
+      </div>
+      <div class="inspect-box">
+        <div><span class="label">状态</span><span class="value">{{ globalState.inspect\u72b6\u6001.active ? '执行中' : (globalState.inspect\u72b6\u6001.success === false ? '失败' : (globalState.inspect\u72b6\u6001.success === true ? '完成' : '空闲')) }}</span></div>
+        <div><span class="label">详情</span><span class="value">{{ cooldownMessage || globalState.inspect\u72b6\u6001.detail || globalState.inspect\u72b6\u6001.message || '-' }}</span></div>
+      </div>
+    </div>
+    <!-- 地图管理面板 -->
+    <div v-if="showUpload" style="margin-bottom:8px;padding:10px 14px;background:#0d1117;border:1px solid #1e3a5f;border-radius:6px;font-size:12px;">
+      <!-- 已注册地图选择 -->
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+        <span style="color:#8b949e;white-space:nowrap;">加载已注册地图:</span>
+        <select v-model="selectedMapId" style="background:#111;border:1px solid #444;color:#e0e0e0;padding:3px 8px;border-radius:4px;flex:1;max-width:320px;">
+          <option :value="null" disabled>选择地图…</option>
+          <option v-for="m in registeredMaps" :key="m.id" :value="m.id">{{ m.filename.replace('.png','') }} · 整张地图</option>
+        </select>
+        <button class="btn" @click="loadMapById" :disabled="selectedMapId===null" style="padding:4px 12px;font-size:12px;">加载</button>
+        <button class="btn" @click="refreshRegisteredMaps" style="padding:4px 8px;font-size:12px;">刷新</button>
+      </div>
+      <!-- 从 Jetson 拉取 -->
+      <div style="border-top:1px solid #1e3a5f;padding-top:8px;margin-bottom:6px;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;flex-wrap:wrap;">
+          <span style="color:#ffc107;white-space:nowrap;">从 Jetson 拉取:</span>
+          <input v-model="jetsonHost" list="jetson-ip-history" placeholder="Jetson IP" style="background:#111;border:1px solid #444;color:#e0e0e0;padding:3px 8px;border-radius:4px;width:160px;font-size:12px;">
+          <datalist id="jetson-ip-history">
+            <option v-for="ip in jetsonHostHistory" :key="ip" :value="ip">{{ ip }}</option>
+          </datalist>
+          <button class="btn" @click="listJetsonMaps" style="padding:4px 10px;font-size:12px;border-color:#ffc107;">列出地图</button>
+          <span v-if="jetsonLoading" style="color:#555;font-size:11px;">连接中…</span>
+          <span v-if="jetsonHostHistory.length>0" style="color:#555;font-size:11px;">
+            历史: <span v-for="(ip,i) in jetsonHostHistory" :key="ip" style="cursor:pointer;color:#ffc107;margin-right:4px;" @click="jetsonHost=ip">{{ ip }}</span>
+            <span style="cursor:pointer;color:#555;margin-left:4px;" @click="jetsonHostHistory=[];localStorage.removeItem('jetson_ip_history')">清除</span>
+          </span>
+        </div>
+        <div v-for="f in jetsonFiles" :key="f.stem" style="display:flex;align-items:center;gap:8px;padding:4px 0;border-bottom:1px solid #161b22;">
+          <span style="color:#e0e0e0;flex:1;">{{ f.stem }}</span>
+          <span v-if="f.registered" style="color:#00e676;font-size:11px;">✓ 已注册</span>
+          <template v-else>
+            <span style="color:#8b949e;font-size:11px;">整张地图</span>
+            <button class="btn" @click="pullMap(f)" style="padding:3px 10px;font-size:11px;border-color:#ffc107;">拉取</button>
+          </template>
+        </div>
+        <div v-if="jetsonFiles.length===0&&!jetsonLoading" style="color:#555;font-size:11px;padding:4px 0;">点击"列出地图"获取 Jetson 上的地图文件</div>
+      </div>
+      <!-- 文件夹导入 -->
+      <div style="border-top:1px solid #1e3a5f;padding-top:8px;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+          <span style="color:#69f0ae;white-space:nowrap;">从服务器文件夹导入:</span>
+          <button class="btn" @click="scanFolder" style="padding:4px 10px;font-size:12px;border-color:#69f0ae;">扫描文件夹</button>
+          <span style="color:#555;font-size:11px;">（Jetson 同步后点此刷新）</span>
+        </div>
+        <div v-for="f in folderFiles" :key="f.stem" style="display:flex;align-items:center;gap:8px;padding:4px 0;border-bottom:1px solid #161b22;">
+          <span style="color:#e0e0e0;flex:1;">{{ f.stem }}</span>
+          <span v-if="f.registered" style="color:#00e676;font-size:11px;">✓ 已注册</span>
+          <template v-else>
+            <span style="color:#8b949e;font-size:11px;">整张地图</span>
+            <button class="btn" @click="importLocal(f)" style="padding:3px 10px;font-size:11px;border-color:#69f0ae;">导入</button>
+          </template>
+        </div>
+        <div v-if="folderFiles.length===0" style="color:#555;font-size:11px;padding:4px 0;">暂无文件，请先从 Jetson 同步地图</div>
+      </div>
+      <!-- 本地上传 -->
+      <div style="border-top:1px solid #1e3a5f;padding-top:8px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+        <span style="color:#8b949e;white-space:nowrap;">本地上传:</span>
+        <span style="color:#8b949e;font-size:12px;">整张地图</span>
+        <button class="btn" @click="$refs.fileInput.click()" style="padding:4px 12px;font-size:12px;">{{ selectedFileName || '选择 PGM/PNG' }}</button>
+        <button class="btn" @click="$refs.yamlInput.click()" style="padding:4px 12px;font-size:12px;">{{ selectedYamlName || '选 YAML' }}</button>
+        <button class="btn" @click="uploadMap" style="padding:4px 12px;font-size:12px;">上传</button>
+      </div>
+    </div>
+    <div class="map-page-layout">
+      <div class="map-container" ref="mapWrap">
+        <canvas ref="mapCanvas"></canvas>
+        <div v-if="!mapLoaded" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:#555;text-align:center;">
+          <div style="font-size:48px;margin-bottom:12px;">&#x1F5FA;</div>
+          <div>暂无地图，请点击上方"上传地图"按钮</div>
+        </div>
+        <div class="map-info-bar" v-if="mapLoaded">
+          <span>缩放: {{ (zoomLevel*100).toFixed(0) }}% | 路径点: {{ waypoints.length }} | 长度: {{ pathLength }}</span>
+          <span :style="{ color: globalState.nav2Ready ? '#00e676' : '#ff5252' }">Nav2: {{ globalState.nav2Ready ? '就绪' : '未就绪' }}</span>
+          <span v-if="globalState.amcl" :style="{ color: amclQualityColor }">定位: {{ amclQualityLabel }}</span>
+          <span>机器人: ({{ Number(globalState.robot\u72b6\u6001.position_x||0).toFixed(2) }}, {{ Number(globalState.robot\u72b6\u6001.position_y||0).toFixed(2) }}) {{ robotStateLabel }}</span>
+          <span v-if="globalState.wpProgress.active" style="color:#ffc107;">
+            多点导航: {{ globalState.wpProgress.current }}/{{ globalState.wpProgress.total }}
+            {{ wpProgressBar }}
+            {{ wpProgressPct }}%
+            <span style="cursor:pointer;color:#ff5252;margin-left:8px;" @click="cancelNav">[取消]</span>
+          </span>
+          <span v-else-if="globalState.nav\u72b6\u6001.active" style="color:#ffc107;">导航中 剩余{{ Number(globalState.nav\u72b6\u6001.distanceRemaining||0).toFixed(1) }}m</span>
+          <span v-if="globalState.nav\u72b6\u6001.result === 'succeeded'" style="color:#00e676;">已到达目标</span>
+          <span v-if="globalState.nav\u72b6\u6001.result === 'failed'" style="color:#ff5252;">导航失败</span>
+          <span v-if="globalState.nav\u72b6\u6001.result === 'canceled'" style="color:#ffc107;">导航已取消</span>
+          <span v-if="mode === 'nav'" style="color:#00e676;">点击地图设置导航目标，长按拖拽设置朝向</span>
+          <span v-if="mode === 'set_pose'" style="color:#448aff;">点击并拖拽设置初始位姿方向</span>
+          <span v-if="mode === 'draw'" style="color:#00b0ff;">点击添加航点，拖拽设置朝向</span>
+        </div>
+      </div>
+      <div class="path-sidebar">
+        <h4>已保存路径 ({{ savedPaths.length }})</h4>
+        <div v-for="p in savedPaths" :key="p.id" class="path-item" :class="{ active: activePathId === p.id }">
+          <div class="path-name">{{ p.name || '未命名' }}</div>
+          <div class="path-meta">整张地图 | {{ countWaypoints(p) }}点</div>
+          <div class="path-actions">
+            <button class="btn" @click="loadPath(p)">加载</button>
+            <button class="btn btn-danger" @click="deletePath(p.id)">删除</button>
+          </div>
+        </div>
+        <div v-if="savedPaths.length===0" style="color:#555;font-size:12px;text-align:center;padding:20px;">暂无保存的路径</div>
+
+
+        <h4 style="margin-top:18px;">预置点 ({{ presetPoints.length }})</h4>
+        <div v-for="pt in presetPoints" :key="pt.id" class="path-item">
+          <div class="path-name">{{ pt.name || '未命名预置点' }}</div>
+          <div class="path-meta">地点 | ({{ Number(pt.x).toFixed(2) }}, {{ Number(pt.y).toFixed(2) }})</div>
+          <div class="path-actions">
+            <button class="btn" @click="navigateToPreset(pt)" style="border-color:#00e676;">导航</button>
+            <button class="btn" @click="appendPresetPoint(pt)">加入路径</button>
+            <button class="btn btn-danger" @click="deletePresetPoint(pt.id)">删除</button>
+          </div>
+        </div>
+        <div v-if="presetPoints.length===0" style="color:#555;font-size:12px;text-align:center;padding:20px;">暂无预置点</div>
+      </div>
+    </div>
+    <!-- 右键菜单 -->
+    <div v-if="ctxMenu.show" class="context-menu" :style="{ left: ctxMenu.x+'px', top: ctxMenu.y+'px' }">
+      <div @click="editHeading(ctxMenu.index)">修改朝向</div>
+      <div @click="deletePoint(ctxMenu.index)">删除该点</div>
+    </div>
+  </div>
+  `,
+  setup() {
+    const mapCanvas = ref(null);
+    const mapWrap = ref(null);
+    const fileInput = ref(null);
+    const yamlInput = ref(null);
+    const mapLoaded = ref(false);
+    const mode = ref('view'); // 'view' | 'draw'
+    const waypoints = ref([]); // [{x, y, theta}] 物理坐标(米), theta=朝向弧度
+    const savedPaths = ref([]);
+    const presetPoints = ref([]);
+    const activePathId = ref(null);
+    const selected\u56ed\u533aId = ref(0);
+    const showSaveForm = ref(false);
+    const savePathName = ref('');
+    const ctxMenu = reactive({ show: false, x: 0, y: 0, index: -1 });
+    const showUpload = ref(false);
+    const selectedFileName = ref('');
+    const selectedYamlName = ref('');
+    const registeredMaps = ref([]);
+    const selectedMapId = ref(null);
+    const folderFiles = ref([]);
+    const localUpload\u56ed\u533aId = ref(0);
+    const jetsonHost = ref('');
+    const jetsonFiles = ref([]);
+    const jetsonLoading = ref(false);
+    const jetsonHostHistory = ref(JSON.parse(localStorage.getItem('jetson_ip_history') || '[]'));
+    const cooldownMessage = ref('');
+
+    function saveJetsonIp(ip) {
+      if (!ip) return;
+      const list = jetsonHostHistory.value.filter(h => h !== ip);
+      list.unshift(ip);
+      jetsonHostHistory.value = list.slice(0, 10);
+      localStorage.setItem('jetson_ip_history', JSON.stringify(jetsonHostHistory.value));
+    }
+
+    let mapImg = null;
+    let ctx = null;
+    let mapMeta = { resolution: 0.05, origin_x: 0, origin_y: 0, width: 0, height: 0 };
+    let zoomLevel = ref(1);
+    let panOffset = reactive({ x: 0, y: 0 });
+
+    // 拖拽/交互状态
+    let isDragging = false;
+    let dragType = ''; // 'pan' | 'point'
+    let dragPointIdx = -1;
+    let mouseDownPos = { x: 0, y: 0 };
+    let mouseDownPan = { x: 0, y: 0 };
+    let hoverIdx = -1;
+    let navTarget = reactive({ x: null, y: null, theta: 0 });
+    let poseArrow = reactive({ startX: null, startY: null, endX: null, endY: null });
+    // 绘制路径时拖拽设置朝向的状态
+    let drawDrag = reactive({ active: false, startX: 0, startY: 0, endX: 0, endY: 0 });
+    let navDrag = reactive({ active: false, startX: 0, startY: 0, endX: 0, endY: 0 });
+    // 右键修改朝向模式
+    let editHeadingState = reactive({ active: false, index: -1 });
+
+
+    const inspectStageLabel = computed(() => {
+      const s = globalState.inspect\u72b6\u6001.stage || 'idle';
+      const map = { idle: '空闲', sent: '已下发', started: '已启动', navigate: '导航到区域', track: '识别追踪靠近', infer: '单帧推理', save: '保存结果', done: '完成', failed: '失败' };
+      return map[s] || s;
+    });
+
+    async function startInspectRegion(region) {
+      if (globalState.inspect\u72b6\u6001.active) return alert('当前已有巡检任务执行中');
+      Object.assign(globalState.inspect\u72b6\u6001, { active: true, region, task_id: '', stage: 'sent', detail: '下发中', success: null, message: '', result_json: '' });
+      try {
+        const resp = await fetch('/api/patrol/inspect_region', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ region })
+        });
+        const d = await resp.json();
+        if (!d.ok) {
+          Object.assign(globalState.inspect\u72b6\u6001, { active: false, stage: 'failed', success: false, message: d.error || '下发失败', detail: d.error || '下发失败' });
+          return alert(d.error || '下发失败');
+        }
+        Object.assign(globalState.inspect\u72b6\u6001, { active: true, region, task_id: d.task_id, stage: 'sent', detail: '任务已下发' });
+      } catch(e) {
+        Object.assign(globalState.inspect\u72b6\u6001, { active: false, stage: 'failed', success: false, message: e.message, detail: e.message });
+        alert('下发失败: ' + e.message);
+      }
+    }
+
+    async function resetAnomalyCooldown() {
+      try {
+        const resp = await fetch('/api/patrol/anomaly_cooldown/reset', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        const d = await resp.json();
+        if (!d.ok) return alert(d.error || '解除冷却失败');
+        cooldownMessage.value = '任务冷却已清除，下一次湿度异常会自动触发对应检测';
+        setTimeout(() => { cooldownMessage.value = ''; }, 3500);
+      } catch(e) {
+        alert('解除冷却失败: ' + e.message);
+      }
+    }
+    const robotStateLabel = computed(() => {
+      const map = { idle: '待机', patrolling: '巡检中', navigating: '导航中', returning: '回归中', offline: '离线' };
+      return map[globalState.robot\u72b6\u6001.state] || globalState.robot\u72b6\u6001.state;
+    });
+
+    const amclQualityLabel = computed(() => {
+      const a = globalState.amcl;
+      if (!a) return '未知';
+      const total = a.cov_x + a.cov_y;
+      if (total < 0.02) return '优';
+      if (total < 0.1) return '良';
+      if (total < 0.5) return '差';
+      return '极差';
+    });
+    const amclQualityColor = computed(() => {
+      const a = globalState.amcl;
+      if (!a) return '#8b949e';
+      const total = a.cov_x + a.cov_y;
+      if (total < 0.02) return '#00e676';
+      if (total < 0.1) return '#ffc107';
+      if (total < 0.5) return '#ff9800';
+      return '#ff5252';
+    });
+
+    const wpProgressPct = computed(() => {
+      const wp = globalState.wpProgress;
+      if (!wp.active || wp.total === 0) return 0;
+      return Math.round((wp.current / wp.total) * 100);
+    });
+    const wpProgressBar = computed(() => {
+      const pct = wpProgressPct.value;
+      const filled = Math.round(pct / 10);
+      return '\u2588'.repeat(filled) + '\u2591'.repeat(10 - filled);
+    });
+
+    const pathLength = computed(() => {
+      let len = 0;
+      for (let i = 1; i < waypoints.value.length; i++) {
+        const dx = waypoints.value[i].x - waypoints.value[i-1].x;
+        const dy = waypoints.value[i].y - waypoints.value[i-1].y;
+        len += Math.sqrt(dx*dx + dy*dy);
+      }
+      return len.toFixed(2) + 'm';
+    });
+
+    // ── 坐标转换 ──
+    function worldToPixel(wx, wy) {
+      if (!mapImg) return { px: 0, py: 0 };
+      const px = ((wx - mapMeta.origin_x) / mapMeta.resolution) * zoomLevel.value + panOffset.x;
+      const py = ((mapMeta.height - (wy - mapMeta.origin_y) / mapMeta.resolution)) * zoomLevel.value + panOffset.y;
+      return { px, py };
+    }
+
+    function pixelToWorld(cx, cy) {
+      const imgX = (cx - panOffset.x) / zoomLevel.value;
+      const imgY = (cy - panOffset.y) / zoomLevel.value;
+      const wx = imgX * mapMeta.resolution + mapMeta.origin_x;
+      const wy = (mapMeta.height - imgY) * mapMeta.resolution + mapMeta.origin_y;
+      return { wx, wy };
+    }
+
+    function fitMap() {
+      if (!mapImg || !mapCanvas.value) return;
+      const cw = mapCanvas.value.width;
+      const ch = mapCanvas.value.height;
+      const iw = mapImg.naturalWidth;
+      const ih = mapImg.naturalHeight;
+      const scale = Math.min(cw / iw, ch / ih) * 0.9;
+      zoomLevel.value = scale;
+      panOffset.x = (cw - iw * scale) / 2;
+      panOffset.y = (ch - ih * scale) / 2;
+    }
+
+    // ── 渲染 ──
+    function redraw() {
+      if (!ctx || !mapCanvas.value) return;
+      const c = mapCanvas.value;
+      ctx.clearRect(0, 0, c.width, c.height);
+
+      // 地图图片
+      if (mapImg) {
+        const iw = mapImg.naturalWidth;
+        const ih = mapImg.naturalHeight;
+        ctx.drawImage(mapImg, panOffset.x, panOffset.y, iw * zoomLevel.value, ih * zoomLevel.value);
+      }
+
+      // 预置点
+      presetPoints.value.forEach((pt) => {
+        const p = worldToPixel(pt.x, pt.y);
+        ctx.beginPath();
+        ctx.arc(p.px, p.py, 4, 0, Math.PI * 2);
+        ctx.fillStyle = '#ab47bc';
+        ctx.fill();
+        ctx.strokeStyle = '#fff';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+        ctx.fillStyle = '#e1bee7';
+        ctx.font = '10px sans-serif';
+        ctx.fillText(pt.name || '预置点', p.px + 8, p.py - 6);
+      });
+
+      // 路径线段
+      if (waypoints.value.length > 1) {
+        ctx.strokeStyle = '#00e676';
+        ctx.lineWidth = 2;
+        ctx.setLineDash([]);
+        ctx.beginPath();
+        const p0 = worldToPixel(waypoints.value[0].x, waypoints.value[0].y);
+        ctx.moveTo(p0.px, p0.py);
+        for (let i = 1; i < waypoints.value.length; i++) {
+          const pi = worldToPixel(waypoints.value[i].x, waypoints.value[i].y);
+          ctx.lineTo(pi.px, pi.py);
+        }
+        ctx.stroke();
+      }
+
+      // 路径点 + 朝向箭头
+      const wpProg = globalState.wpProgress;
+      waypoints.value.forEach((wp, i) => {
+        const p = worldToPixel(wp.x, wp.y);
+        const r = (i === hoverIdx) ? 8 : 5;
+
+        // 颜色: 根据导航进度
+        let color;
+        if (wpProg.active) {
+          if (i < wpProg.current) color = '#66bb6a'; // 已到达: 绿色
+          else if (i === wpProg.current) color = '#ff9800'; // 当前: 橙色
+          else color = '#42a5f5'; // 未到达: 蓝色
+        } else {
+          color = i === 0 ? '#00e676' : '#00b0ff';
+        }
+
+        ctx.beginPath();
+        ctx.arc(p.px, p.py, r, 0, Math.PI * 2);
+        ctx.fillStyle = color;
+        ctx.fill();
+        ctx.strokeStyle = '#fff';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+
+        // 已到达的勾号
+        if (wpProg.active && i < wpProg.current) {
+          ctx.fillStyle = '#fff';
+          ctx.font = 'bold 10px sans-serif';
+          ctx.fillText('\u2713', p.px - 4, p.py + 4);
+        }
+
+        // 当前目标闪烁效果(通过半透明外圈)
+        if (wpProg.active && i === wpProg.current) {
+          ctx.beginPath();
+          ctx.arc(p.px, p.py, 12, 0, Math.PI * 2);
+          ctx.strokeStyle = '#ff9800';
+          ctx.lineWidth = 2;
+          ctx.setLineDash([3, 3]);
+          ctx.stroke();
+          ctx.setLineDash([]);
+        }
+
+        // 朝向箭头
+        const theta = wp.theta || 0;
+        if (theta !== 0 || wp.theta === 0) {
+          const arrowLen = 20;
+          // Canvas: 右为+X, 下为+Y; 世界: 右为+X, 上为+Y → 所以 dy 取反
+          const ax = p.px + arrowLen * Math.cos(theta);
+          const ay = p.py - arrowLen * Math.sin(theta);
+          ctx.strokeStyle = color;
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.moveTo(p.px, p.py);
+          ctx.lineTo(ax, ay);
+          ctx.stroke();
+          // 箭头头
+          const hs = 8;
+          const angle = Math.atan2(ay - p.py, ax - p.px);
+          ctx.beginPath();
+          ctx.moveTo(ax, ay);
+          ctx.lineTo(ax - hs * Math.cos(angle - 0.5), ay - hs * Math.sin(angle - 0.5));
+          ctx.moveTo(ax, ay);
+          ctx.lineTo(ax - hs * Math.cos(angle + 0.5), ay - hs * Math.sin(angle + 0.5));
+          ctx.stroke();
+        }
+
+        // 序号
+        ctx.fillStyle = '#fff';
+        ctx.font = '10px sans-serif';
+        ctx.fillText(i + 1, p.px + r + 3, p.py + 4);
+      });
+
+      // 导航目标点
+      if (navTarget.x !== null && mapLoaded.value) {
+        const tp = worldToPixel(navTarget.x, navTarget.y);
+        // 十字标记
+        ctx.strokeStyle = '#00e676';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(tp.px - 12, tp.py); ctx.lineTo(tp.px + 12, tp.py);
+        ctx.moveTo(tp.px, tp.py - 12); ctx.lineTo(tp.px, tp.py + 12);
+        ctx.stroke();
+        // 外圈
+        ctx.beginPath();
+        ctx.arc(tp.px, tp.py, 10, 0, Math.PI * 2);
+        ctx.strokeStyle = '#00e676';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        ctx.fillStyle = '#fff';
+        ctx.font = 'bold 9px sans-serif';
+        ctx.fillText('T', tp.px + 13, tp.py + 4);
+        const theta = navTarget.theta || 0;
+        const arrowLen = 24;
+        const ax = tp.px + arrowLen * Math.cos(theta);
+        const ay = tp.py - arrowLen * Math.sin(theta);
+        ctx.beginPath();
+        ctx.moveTo(tp.px, tp.py);
+        ctx.lineTo(ax, ay);
+        ctx.strokeStyle = '#00e676';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+      }
+
+      // 导航目标拖拽朝向预览
+      if (navDrag.active) {
+        ctx.strokeStyle = '#00e676';
+        ctx.lineWidth = 2;
+        ctx.setLineDash([4, 4]);
+        ctx.beginPath();
+        ctx.moveTo(navDrag.startX, navDrag.startY);
+        ctx.lineTo(navDrag.endX, navDrag.endY);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        const dx = navDrag.endX - navDrag.startX;
+        const dy = navDrag.endY - navDrag.startY;
+        const len = Math.sqrt(dx*dx + dy*dy);
+        if (len > 8) {
+          const angle = Math.atan2(dy, dx);
+          const hs = 10;
+          ctx.beginPath();
+          ctx.moveTo(navDrag.endX, navDrag.endY);
+          ctx.lineTo(navDrag.endX - hs * Math.cos(angle - 0.4), navDrag.endY - hs * Math.sin(angle - 0.4));
+          ctx.moveTo(navDrag.endX, navDrag.endY);
+          ctx.lineTo(navDrag.endX - hs * Math.cos(angle + 0.4), navDrag.endY - hs * Math.sin(angle + 0.4));
+          ctx.stroke();
+        }
+        ctx.beginPath();
+        ctx.arc(navDrag.startX, navDrag.startY, 6, 0, Math.PI * 2);
+        ctx.fillStyle = '#00e676';
+        ctx.fill();
+      }
+
+      // 位姿设置箭头预览
+      if (poseArrow.startX !== null) {
+        const sx = poseArrow.startX, sy = poseArrow.startY;
+        const ex = poseArrow.endX, ey = poseArrow.endY;
+        const dx = ex - sx, dy = ey - sy;
+        const len = Math.sqrt(dx*dx + dy*dy);
+        ctx.strokeStyle = '#448aff';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(sx, sy);
+        ctx.lineTo(ex, ey);
+        ctx.stroke();
+        if (len > 8) {
+          const angle = Math.atan2(dy, dx);
+          const hs = 12;
+          ctx.beginPath();
+          ctx.moveTo(ex, ey);
+          ctx.lineTo(ex - hs * Math.cos(angle - 0.4), ey - hs * Math.sin(angle - 0.4));
+          ctx.moveTo(ex, ey);
+          ctx.lineTo(ex - hs * Math.cos(angle + 0.4), ey - hs * Math.sin(angle + 0.4));
+          ctx.stroke();
+        }
+        ctx.beginPath();
+        ctx.arc(sx, sy, 6, 0, Math.PI * 2);
+        ctx.fillStyle = '#448aff';
+        ctx.fill();
+        ctx.strokeStyle = '#fff';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+      }
+
+      // 绘制路径拖拽朝向预览
+      if (drawDrag.active) {
+        ctx.strokeStyle = '#00b0ff';
+        ctx.lineWidth = 2;
+        ctx.setLineDash([4, 4]);
+        ctx.beginPath();
+        ctx.moveTo(drawDrag.startX, drawDrag.startY);
+        ctx.lineTo(drawDrag.endX, drawDrag.endY);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        const ddx = drawDrag.endX - drawDrag.startX;
+        const ddy = drawDrag.endY - drawDrag.startY;
+        const ddLen = Math.sqrt(ddx*ddx + ddy*ddy);
+        if (ddLen > 8) {
+          const a = Math.atan2(ddy, ddx);
+          ctx.beginPath();
+          ctx.moveTo(drawDrag.endX, drawDrag.endY);
+          ctx.lineTo(drawDrag.endX - 10*Math.cos(a-0.4), drawDrag.endY - 10*Math.sin(a-0.4));
+          ctx.moveTo(drawDrag.endX, drawDrag.endY);
+          ctx.lineTo(drawDrag.endX - 10*Math.cos(a+0.4), drawDrag.endY - 10*Math.sin(a+0.4));
+          ctx.stroke();
+        }
+      }
+
+      // 机器人位置
+      if (mapLoaded.value) {
+        const rp = worldToPixel(globalState.robot\u72b6\u6001.position_x, globalState.robot\u72b6\u6001.position_y);
+        ctx.beginPath();
+        ctx.arc(rp.px, rp.py, 8, 0, Math.PI * 2);
+        ctx.fillStyle = '#ff5252';
+        ctx.fill();
+        ctx.strokeStyle = '#fff';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        ctx.fillStyle = '#fff';
+        ctx.font = 'bold 10px sans-serif';
+        ctx.fillText('R', rp.px - 4, rp.py + 4);
+      }
+    }
+
+    // ── 命中检测 ──
+    function hitTestPoint(cx, cy) {
+      for (let i = 0; i < waypoints.value.length; i++) {
+        const p = worldToPixel(waypoints.value[i].x, waypoints.value[i].y);
+        const dx = cx - p.px, dy = cy - p.py;
+        if (dx*dx + dy*dy < 100) return i; // 10px半径
+      }
+      return -1;
+    }
+
+    function getCanvasPos(e) {
+      const rect = mapCanvas.value.getBoundingClientRect();
+      return { x: e.clientX - rect.left, y: e.clientY - rect.top };
+    }
+
+    // ── Canvas 事件 ──
+    function onMouseDown(e) {
+      if (e.button === 2) return; // 右键在contextmenu处理
+      ctxMenu.show = false;
+      const pos = getCanvasPos(e);
+      mouseDownPos = { x: pos.x, y: pos.y };
+
+      // 修改朝向模式
+      if (editHeadingState.active) {
+        const wp = waypoints.value[editHeadingState.index];
+        const p = worldToPixel(wp.x, wp.y);
+        drawDrag.active = true;
+        drawDrag.startX = p.px;
+        drawDrag.startY = p.py;
+        drawDrag.endX = pos.x;
+        drawDrag.endY = pos.y;
+        isDragging = true;
+        dragType = 'edit_heading';
+        return;
+      }
+
+      if (mode.value === 'set_pose') {
+        poseArrow.startX = pos.x;
+        poseArrow.startY = pos.y;
+        poseArrow.endX = pos.x;
+        poseArrow.endY = pos.y;
+        isDragging = true;
+        dragType = 'pose_arrow';
+        return;
+      }
+
+      if (mode.value === 'draw') {
+        drawDrag.active = true;
+        drawDrag.startX = pos.x;
+        drawDrag.startY = pos.y;
+        drawDrag.endX = pos.x;
+        drawDrag.endY = pos.y;
+        isDragging = true;
+        dragType = 'draw_heading';
+        return;
+      }
+
+      if (mode.value === 'nav') {
+        navDrag.active = true;
+        navDrag.startX = pos.x;
+        navDrag.startY = pos.y;
+        navDrag.endX = pos.x;
+        navDrag.endY = pos.y;
+        isDragging = true;
+        dragType = 'nav_heading';
+        return;
+      }
+
+      if (mode.value === 'view' || mode.value === 'nav') {
+        const hitIdx = hitTestPoint(pos.x, pos.y);
+        if (hitIdx >= 0 && mode.value === 'view') {
+          dragType = 'point';
+          dragPointIdx = hitIdx;
+          isDragging = true;
+        } else {
+          dragType = 'pan';
+          mouseDownPan = { x: panOffset.x, y: panOffset.y };
+          isDragging = true;
+        }
+      }
+    }
+
+    function onMouseMove(e) {
+      const pos = getCanvasPos(e);
+
+      if (isDragging && (dragType === 'draw_heading' || dragType === 'edit_heading')) {
+        drawDrag.endX = pos.x;
+        drawDrag.endY = pos.y;
+        redraw();
+        return;
+      }
+
+      if (isDragging && dragType === 'nav_heading') {
+        navDrag.endX = pos.x;
+        navDrag.endY = pos.y;
+        redraw();
+        return;
+      }
+
+      if (isDragging && dragType === 'pose_arrow') {
+        poseArrow.endX = pos.x;
+        poseArrow.endY = pos.y;
+        redraw();
+        return;
+      }
+
+      if (isDragging && dragType === 'pan') {
+        panOffset.x = mouseDownPan.x + (pos.x - mouseDownPos.x);
+        panOffset.y = mouseDownPan.y + (pos.y - mouseDownPos.y);
+        redraw();
+        return;
+      }
+
+      if (isDragging && dragType === 'point') {
+        const w = pixelToWorld(pos.x, pos.y);
+        const oldTheta = waypoints.value[dragPointIdx].theta || 0;
+        waypoints.value[dragPointIdx] = { x: w.wx, y: w.wy, theta: oldTheta };
+        redraw();
+        return;
+      }
+
+      // 悬停检测
+      const newHover = hitTestPoint(pos.x, pos.y);
+      if (newHover !== hoverIdx) {
+        hoverIdx = newHover;
+        const cursorMap = { draw: 'crosshair', nav: 'crosshair', set_pose: 'crosshair' };
+        mapCanvas.value.style.cursor = hoverIdx >= 0 ? 'grab' : (cursorMap[mode.value] || 'default');
+        redraw();
+      }
+    }
+
+    function onMouseUp(e) {
+      const pos = getCanvasPos(e);
+      const dist = Math.sqrt((pos.x - mouseDownPos.x)**2 + (pos.y - mouseDownPos.y)**2);
+
+      // 绘制路径拖拽设置朝向
+      if (dragType === 'draw_heading' && mode.value === 'draw') {
+        const dx = drawDrag.endX - drawDrag.startX;
+        const dy = drawDrag.endY - drawDrag.startY;
+        const dragDist = Math.sqrt(dx*dx + dy*dy);
+        const w = pixelToWorld(drawDrag.startX, drawDrag.startY);
+        const theta = dragDist < 5 ? 0 : Math.atan2(-dy, dx);
+        waypoints.value.push({ x: w.wx, y: w.wy, theta });
+        drawDrag.active = false;
+        isDragging = false;
+        dragType = '';
+        redraw();
+        return;
+      }
+
+      // 修改朝向模式
+      if (dragType === 'edit_heading' && editHeadingState.active) {
+        const dx = drawDrag.endX - drawDrag.startX;
+        const dy = drawDrag.endY - drawDrag.startY;
+        const dragDist = Math.sqrt(dx*dx + dy*dy);
+        const theta = dragDist < 5 ? 0 : Math.atan2(-dy, dx);
+        waypoints.value[editHeadingState.index] = {
+          ...waypoints.value[editHeadingState.index],
+          theta
+        };
+        drawDrag.active = false;
+        editHeadingState.active = false;
+        editHeadingState.index = -1;
+        isDragging = false;
+        dragType = '';
+        mapCanvas.value.style.cursor = 'default';
+        redraw();
+        return;
+      }
+
+      if (dragType === 'nav_heading' && mode.value === 'nav') {
+        const dx = navDrag.endX - navDrag.startX;
+        const dy = navDrag.endY - navDrag.startY;
+        const dragDist = Math.sqrt(dx*dx + dy*dy);
+        const w = pixelToWorld(navDrag.startX, navDrag.startY);
+        const theta = dragDist < 5 ? 0 : Math.atan2(-dy, dx);
+        sendNavigateTo(w.wx, w.wy, theta);
+        navDrag.active = false;
+        isDragging = false;
+        dragType = '';
+        redraw();
+        return;
+      }
+
+      if (dragType === 'pose_arrow' && mode.value === 'set_pose') {
+        const dx = poseArrow.endX - poseArrow.startX;
+        const dy = poseArrow.endY - poseArrow.startY;
+        const arrowDist = Math.sqrt(dx*dx + dy*dy);
+        const w = pixelToWorld(poseArrow.startX, poseArrow.startY);
+        // 拖拽距离 < 5px 视为纯点击，theta=0；否则计算方向
+        // canvas Y 轴向下, 世界坐标 Y 轴向上, 所以 dy 取反
+        const theta = arrowDist < 5 ? 0 : Math.atan2(-dy, dx);
+        sendSetPose(w.wx, w.wy, theta);
+        poseArrow.startX = null;
+        isDragging = false;
+        dragType = '';
+        redraw();
+        return;
+      }
+
+      isDragging = false;
+      dragType = '';
+      dragPointIdx = -1;
+    }
+
+    function onWheel(e) {
+      e.preventDefault();
+      const pos = getCanvasPos(e);
+      const oldZoom = zoomLevel.value;
+      const factor = e.deltaY < 0 ? 1.1 : 0.9;
+      const newZoom = Math.min(10, Math.max(0.1, oldZoom * factor));
+      // 以鼠标为中心缩放
+      panOffset.x = pos.x - (pos.x - panOffset.x) * (newZoom / oldZoom);
+      panOffset.y = pos.y - (pos.y - panOffset.y) * (newZoom / oldZoom);
+      zoomLevel.value = newZoom;
+      redraw();
+    }
+
+    function onContextMenu(e) {
+      e.preventDefault();
+      const pos = getCanvasPos(e);
+      const hitIdx = hitTestPoint(pos.x, pos.y);
+      if (hitIdx >= 0) {
+        ctxMenu.show = true;
+        ctxMenu.x = e.clientX;
+        ctxMenu.y = e.clientY;
+        ctxMenu.index = hitIdx;
+      } else if (mode.value === 'draw') {
+        // 右键结束绘制
+        mode.value = 'view';
+      }
+    }
+
+    function onDblClick(e) {
+      if (mode.value === 'draw') {
+        mode.value = 'view'; // 双击结束绘制
+      }
+    }
+
+    function deletePoint(idx) {
+      ctxMenu.show = false;
+      if (idx >= 0 && idx < waypoints.value.length) {
+        waypoints.value.splice(idx, 1);
+        redraw();
+      }
+    }
+
+    function editHeading(idx) {
+      ctxMenu.show = false;
+      editHeadingState.active = true;
+      editHeadingState.index = idx;
+      mapCanvas.value.style.cursor = 'crosshair';
+    }
+
+    // ── 操作函数 ──
+    function resizeCanvas() {
+      if (!mapCanvas.value || !mapWrap.value) return;
+      mapCanvas.value.width = mapWrap.value.clientWidth;
+      mapCanvas.value.height = mapWrap.value.clientHeight;
+      ctx = mapCanvas.value.getContext('2d');
+      if (mapImg && mapLoaded.value) fitMap();
+      redraw();
+    }
+
+    function toggleDraw() {
+      mode.value = mode.value === 'draw' ? 'view' : 'draw';
+      navDrag.active = false;
+      mapCanvas.value.style.cursor = mode.value === 'draw' ? 'crosshair' : 'default';
+    }
+
+    function toggleNav() {
+      mode.value = mode.value === 'nav' ? 'view' : 'nav';
+      navDrag.active = false;
+      mapCanvas.value.style.cursor = mode.value === 'nav' ? 'crosshair' : 'default';
+    }
+
+    function toggleSetPose() {
+      mode.value = mode.value === 'set_pose' ? 'view' : 'set_pose';
+      navDrag.active = false;
+      mapCanvas.value.style.cursor = mode.value === 'set_pose' ? 'crosshair' : 'default';
+    }
+
+    async function sendNavigateTo(wx, wy, theta = 0) {
+      navTarget.x = wx;
+      navTarget.y = wy;
+      navTarget.theta = theta;
+      redraw();
+      try {
+        const resp = await fetch('/api/robot/navigate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ x: +wx.toFixed(4), y: +wy.toFixed(4), theta: +theta.toFixed(4) })
+        });
+        const d = await resp.json();
+        if (!d.ok) alert(d.error || '发送导航目标失败');
+      } catch(e) { alert('发送导航目标失败: ' + e.message); }
+    }
+
+    async function sendSetPose(wx, wy, theta = 0) {
+      try {
+        const resp = await fetch('/api/robot/set_pose', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ x: +wx.toFixed(4), y: +wy.toFixed(4), theta: +theta.toFixed(4) })
+        });
+        const d = await resp.json();
+        if (d.ok) {
+          mode.value = 'view';
+          mapCanvas.value.style.cursor = 'default';
+        } else {
+          alert(d.error || '设置位姿失败');
+        }
+      } catch(e) { alert('设置位姿失败: ' + e.message); }
+    }
+
+    async function cancelNav() {
+      navTarget.x = null;
+      navTarget.y = null;
+      navTarget.theta = 0;
+      try {
+        await fetch('/api/robot/cancel_nav', { method: 'POST' });
+      } catch(e) {}
+      redraw();
+    }
+
+    function clearPath() {
+      waypoints.value = [];
+      activePathId.value = null;
+      redraw();
+    }
+
+    async function loadMap() {
+      try {
+        const qs = '';
+        const resp = await fetch('/api/maps/latest' + qs);
+        if (!resp.ok) {
+          mapLoaded.value = false;
+          redraw();
+          return;
+        }
+        const d = await resp.json();
+        if (d.map) {
+          mapMeta.resolution = d.map.resolution || 0.05;
+          mapMeta.origin_x = d.map.origin_x || 0;
+          mapMeta.origin_y = d.map.origin_y || 0;
+          mapMeta.width = d.map.height || 0;
+          mapMeta.height = d.map.height || 0;
+          mapImg = new Image();
+          mapImg.onload = () => {
+            mapMeta.width = mapImg.naturalWidth;
+            mapMeta.height = mapImg.naturalHeight;
+            mapLoaded.value = true;
+            fitMap();
+            redraw();
+          };
+          mapImg.src = '/api/maps/file/' + d.map.filename;
+        }
+      } catch(e) { console.error('loadMap error', e); }
+    }
+
+    function onFileSelected() {
+      selectedFileName.value = fileInput.value?.files?.[0]?.name || '';
+    }
+
+    async function refreshRegisteredMaps() {
+      const qs = '';
+      const resp = await fetch('/api/maps' + qs);
+      const d = await resp.json();
+      registeredMaps.value = d.maps || [];
+    }
+
+    async function loadMapById() {
+      const m = registeredMaps.value.find(x => x.id === selectedMapId.value);
+      if (!m) return;
+      mapMeta.resolution = m.resolution || 0.05;
+      mapMeta.origin_x   = m.origin_x   || 0;
+      mapMeta.origin_y   = m.origin_y   || 0;
+      mapImg = new Image();
+      mapImg.onload = () => {
+        mapMeta.width  = mapImg.naturalWidth;
+        mapMeta.height = mapImg.naturalHeight;
+        mapLoaded.value = true;
+        fitMap(); redraw();
+      };
+      mapImg.src = '/api/maps/file/' + m.filename;
+      showUpload.value = false;
+    }
+
+    async function scanFolder() {
+      const resp = await fetch('/api/maps/folder_scan');
+      const d = await resp.json();
+      folderFiles.value = (d.files || []).map(f => ({
+        ...f,
+        _import\u56ed\u533a: 0
+      }));
+    }
+
+    async function listJetsonMaps() {
+      jetsonLoading.value = true;
+      jetsonFiles.value = [];
+      try {
+        const qs = jetsonHost.value ? `?host=${jetsonHost.value}` : '';
+        const resp = await fetch('/api/maps/jetson_files' + qs);
+        const d = await resp.json();
+        if (!d.ok) { alert(d.error || '连接失败'); return; }
+        saveJetsonIp(jetsonHost.value);
+        jetsonFiles.value = (d.files || []).map(f => ({
+          ...f, _pull\u56ed\u533a: 0
+        }));
+      } catch(e) { alert('连接失败: ' + e.message); }
+      finally { jetsonLoading.value = false; }
+    }
+
+    async function pullMap(f) {
+      const body = { stem: f.stem, zone_id: 0 };
+      if (jetsonHost.value) body.host = jetsonHost.value;
+      try {
+        const resp = await fetch('/api/maps/pull_from_jetson', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        });
+        const d = await resp.json();
+        if (d.ok) {
+          f.registered = true;
+          refreshRegisteredMaps();
+          alert(`地图 ${f.stem} 已拉取并注册`);
+        } else { alert(d.error || '拉取失败'); }
+      } catch(e) { alert('拉取失败: ' + e.message); }
+    }
+
+    async function importLocal(f) {
+      const resp = await fetch('/api/maps/import_local', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ stem: f.stem, zone_id: 0 })
+      });
+      const d = await resp.json();
+      if (d.ok) {
+        f.registered = true;
+        refreshRegisteredMaps();
+      } else { alert(d.error || '导入失败'); }
+    }
+
+    async function uploadMap() {
+      const file = fileInput.value?.files?.[0];
+      if (!file) return alert('请选择地图文件');
+      const fd = new FormData();
+      fd.append('file', file);
+      fd.append('zone_id', '0');
+      const yamlFile = yamlInput.value?.files?.[0];
+      if (yamlFile) fd.append('yaml_file', yamlFile);
+      await fetch('/api/maps/upload', { method: 'POST', body: fd });
+      showUpload.value = false;
+      selectedFileName.value = '';
+      selectedYamlName.value = '';
+      loadMap();
+    }
+
+    function startSave() {
+      if (waypoints.value.length < 2) return alert('至少需要2个路径点');
+      showSaveForm.value = true;
+      savePathName.value = '';
+    }
+
+    async function doSavePath() {
+      const name = savePathName.value.trim() || '未命名路径';
+      const zid = 0;
+      const wps = waypoints.value.map(p => ({ x: +p.x.toFixed(4), y: +p.y.toFixed(4), theta: +(p.theta||0).toFixed(4) }));
+      await fetch('/api/patrol/paths', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ zone_id: zid, name, waypoints_json: JSON.stringify(wps) })
+      });
+      showSaveForm.value = false;
+      loadSavedPaths();
+    }
+
+
+    async function sendPatrol() {
+      if (waypoints.value.length < 2) return alert('至少需要2个路径点');
+      let wps = waypoints.value.map(p => ({
+        x: +p.x.toFixed(4), y: +p.y.toFixed(4), theta: +(p.theta||0).toFixed(4)
+      }));
+      // 从机器人当前位置找最近航点，跳过已经到达的部分
+      const rx = globalState.robot\u72b6\u6001.position_x;
+      const ry = globalState.robot\u72b6\u6001.position_y;
+      let nearestIdx = 0, nearestDist = Infinity;
+      wps.forEach((wp, i) => {
+        const d = Math.sqrt((wp.x - rx) ** 2 + (wp.y - ry) ** 2);
+        if (d < nearestDist) { nearestDist = d; nearestIdx = i; }
+      });
+      // 如果机器人距某个航点 < 0.5m，从该点的下一个开始
+      if (nearestDist < 0.5 && nearestIdx < wps.length - 1) {
+        wps = wps.slice(nearestIdx + 1);
+      }
+      if (wps.length === 0) return alert('机器人已在终点附近，无需导航');
+      try {
+        const resp = await fetch('/api/robot/waypoint_nav', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ waypoints: wps, task_id: Date.now().toString() })
+        });
+        const result = await resp.json();
+        if (!result.ok) {
+          alert(result.error || '下发失败');
+        }
+      } catch(e) { alert('下发失败: ' + e.message); }
+    }
+
+    async function sendRandomPatrol() {
+      const zid = 0;
+      const raw = prompt('随机抽巡几个预置点？', '3');
+      if (raw === null) return;
+      const count = parseInt(raw, 10);
+      if (!Number.isFinite(count) || count <= 0) return alert('请输入大于 0 的整数');
+      try {
+        const resp = await fetch('/api/patrol/tasks/random', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ zone_id: zid, count })
+        });
+        const d = await resp.json();
+        if (!d.ok) return alert(d.error || '随机抽巡下发失败');
+        waypoints.value = (d.waypoints || []).map(pt => ({
+          x: pt.x,
+          y: pt.y,
+          theta: pt.theta || 0,
+        }));
+        activePathId.value = null;
+        redraw();
+      } catch(e) {
+        alert('随机抽巡下发失败: ' + e.message);
+      }
+    }
+
+    async function loadSavedPaths() {
+      try {
+        const qs = '';
+        const resp = await fetch('/api/patrol/paths' + qs);
+        const d = await resp.json();
+        savedPaths.value = d.paths || [];
+      } catch(e) {}
+    }
+
+    async function loadPresetPoints() {
+      try {
+        const qs = '';
+        const resp = await fetch('/api/patrol/preset_points' + qs);
+        const d = await resp.json();
+        presetPoints.value = d.points || [];
+        redraw();
+      } catch(e) {}
+    }
+
+    async function navigateToPreset(pt) {
+      await sendNavigateTo(pt.x, pt.y, pt.theta || 0);
+    }
+
+    function appendPresetPoint(pt) {
+      waypoints.value.push({ x: pt.x, y: pt.y, theta: pt.theta || 0 });
+      redraw();
+    }
+
+    function loadPath(p) {
+      try {
+        const pts = JSON.parse(p.waypoints_json);
+        // 兼容旧格式 [x,y] 和新格式 {x,y} 和新格式 {x,y,theta}
+        waypoints.value = pts.map(pt => Array.isArray(pt)
+          ? { x: pt[0], y: pt[1], theta: 0 }
+          : { x: pt.x, y: pt.y, theta: pt.theta || 0 });
+        activePathId.value = p.id;
+        redraw();
+      } catch(e) { console.error('loadPath error', e); }
+    }
+
+    async function deletePath(id) {
+      if (!confirm('确认删除该路径？')) return;
+      await fetch('/api/patrol/paths/' + id, { method: 'DELETE' });
+      if (activePathId.value === id) { waypoints.value = []; activePathId.value = null; }
+      loadSavedPaths();
+    }
+
+    async function deletePresetPoint(id) {
+      if (!confirm('确认删除该预置点？')) return;
+      await fetch('/api/patrol/preset_points/' + id, { method: 'DELETE' });
+      loadPresetPoints();
+    }
+
+    function countWaypoints(p) {
+      try { return JSON.parse(p.waypoints_json).length; } catch(e) { return 0; }
+    }
+
+    // 关闭右键菜单
+    function onDocClick() { ctxMenu.show = false; }
+
+    // 导航完成时清除目标标记
+    watch(() => globalState.nav\u72b6\u6001.result, (val) => {
+      if (val === 'succeeded' || val === 'failed' || val === 'canceled') {
+        navTarget.x = null;
+        navTarget.y = null;
+        navTarget.theta = 0;
+      }
+      if (mapLoaded.value) redraw();
+    });
+
+    // 监听多点导航进度变化刷新
+    watch(() => globalState.wpProgress, () => {
+      if (mapLoaded.value) redraw();
+    }, { deep: true });
+
+// 监听机器人状态变化刷新
+    watch(() => globalState.robot\u72b6\u6001, () => {
+      if (mapLoaded.value) redraw();
+    }, { deep: true });
+
+    onMounted(() => {
+      nextTick(async () => {
+        // 若 zones 未加载（直接进入地图页）则主动拉取
+        if (globalState.zones.length === 0) {
+          try {
+            const r = await fetch('/api/zones');
+            const d = await r.json();
+            globalState.zones = d.zones || [];
+          } catch(e) {}
+        }
+        resizeCanvas();
+        loadMap();
+        loadSavedPaths();
+        loadPresetPoints();
+        // 绑定Canvas事件
+        const cv = mapCanvas.value;
+        if (cv) {
+          cv.addEventListener('mousedown', onMouseDown);
+          cv.addEventListener('mousemove', onMouseMove);
+          cv.addEventListener('mouseup', onMouseUp);
+          cv.addEventListener('wheel', onWheel, { passive: false });
+          cv.addEventListener('contextmenu', onContextMenu);
+          cv.addEventListener('dblclick', onDblClick);
+        }
+        document.addEventListener('click', onDocClick);
+      });
+      window.addEventListener('resize', resizeCanvas);
+    });
+
+    return {
+      globalState, mapCanvas, mapWrap, fileInput, yamlInput, mapLoaded, mode, waypoints,
+      savedPaths, presetPoints, activePathId, selected\u56ed\u533aId, showSaveForm, savePathName,
+      ctxMenu, zoomLevel, pathLength, robotStateLabel,
+      amclQualityLabel, amclQualityColor,
+      showUpload, selectedFileName, selectedYamlName, localUpload\u56ed\u533aId,
+      registeredMaps, selectedMapId, folderFiles,
+      refreshRegisteredMaps, loadMapById, scanFolder, importLocal,
+      jetsonHost, jetsonFiles, jetsonLoading, jetsonHostHistory, listJetsonMaps, pullMap,
+      wpProgressPct, wpProgressBar,
+      toggleDraw, toggleNav, toggleSetPose, clearPath, loadMap, uploadMap, onFileSelected,
+      startSave, doSavePath, sendPatrol, sendRandomPatrol, startInspectRegion, resetAnomalyCooldown, cooldownMessage, inspectStageLabel,
+      loadPath, deletePath, deletePresetPoint, countWaypoints, appendPresetPoint, navigateToPreset, deletePoint,
+      editHeading, cancelNav
+    };
+  }
+};
+
+// ══════════════════════════════════════
+// 巡检记录组件
+
+/* 巡检记录页 */
+const RecordsPage={
+  template:`
+  <div class="page-inner records-page">
+    <div class="page-content-wrap records-wrap">
+      <div class="records-head">
+        <div class="page-title records-title">\u5de1\u68c0\u8bb0\u5f55</div>
+        <button class="btn btn-red" :disabled="clearing || !records.length" @click="clearRecords">
+          {{clearing?'\u6e05\u7a7a\u4e2d...':'\u6e05\u7a7a\u5de1\u68c0\u8bb0\u5f55'}}
+        </button>
+      </div>
+      <div class="records-table-wrap">
+        <table class="record-table">
+          <thead><tr><th>\u4efb\u52a1ID</th><th>\u89e6\u53d1\u539f\u56e0</th><th>\u56ed\u533a</th><th>\u5f00\u59cb\u65f6\u95f4</th><th>\u72b6\u6001</th><th>\u7ed3\u679c</th></tr></thead>
+          <tbody>
+            <tr v-for="r in records" :key="r.id">
+              <td>{{r.task_id||r.id}}</td>
+              <td>{{triggerReason(r)}}</td>
+              <td>{{zoneName(r.zone_id)}}</td>
+              <td>{{displayTaskTime(r)}}</td>
+              <td><span class="status-badge" :class="r.status">{{statusText(r.status)}}</span></td>
+              <td>
+                <button class="record-result-btn" :class="{'no-images': r.result_json && !hasResultImages(r)}" :disabled="!has\u7ed3\u679c(r)" @click="open\u7ed3\u679c(r)">
+                  {{resultButtonText(r)}}
+                </button>
+              </td>
+            </tr>
+            <tr v-if="!records.length"><td colspan="6" style="text-align:center;color:#4a5568;padding:40px">\u6682\u65e0\u5de1\u68c0\u8bb0\u5f55</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div v-if="selected" class="inspect-modal-mask" @click.self="close\u7ed3\u679c">
+      <div class="inspect-modal">
+        <div class="inspect-modal-head">
+          <div class="inspect-modal-title">Inspection Inference \u7ed3\u679c</div>
+          <button class="inspect-modal-close" @click="close\u7ed3\u679c">\u5173\u95ed</button>
+        </div>
+        <div class="inspect-modal-body">
+          <div class="inspect-image-list">
+            <img v-for="img in resultImages" :key="img" :src="img" alt="\u5de1\u68c0\u7ed3\u679c\u56fe\u7247">
+            <div v-if="!resultImages.length" class="inspect-image-empty">
+              <div>{{imageEmptyMessage}}</div>
+              <div v-if="hasLocalImagePath(parsed\u7ed3\u679c)" class="inspect-image-warning">\u677f\u7aef\u672c\u5730\u56fe\u7247\u8def\u5f84\u4e0d\u80fd\u88ab\u4e91\u7aef\u6d4f\u89c8\u5668\u76f4\u63a5\u8bbf\u95ee</div>
+            </div>
+          </div>
+          <div>
+            <div class="inspect-detail-grid">
+              <div class="label">\u4efb\u52a1ID</div><div class="value">{{selected.task_id||selected.id}}</div>
+              <div class="label">\u89e6\u53d1\u539f\u56e0</div><div class="value">{{triggerReason(selected)}}</div>
+              <div class="label">\u56ed\u533a</div><div class="value">{{zoneName(selected.zone_id)}}</div>
+              <div class="label">\u65f6\u95f4</div><div class="value">{{displayTaskTime(selected)}}</div>
+              <div class="label">\u72b6\u6001</div><div class="value">{{statusText(selected.status)}}</div>
+              <div class="label">\u7ed3\u679c</div><div class="value">{{selected.result||'--'}}</div>
+              <div class="label">\u56fe\u7247</div><div class="value">{{imageStatusLabel}}</div>
+            </div>
+            <div class="inspect-result-summary">{{resultSummary}}</div>
+            <div class="inspect-json">{{pretty\u7ed3\u679cJson}}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>`,
+  setup(){
+    const records=ref([]);
+    const clearing=ref(false);
+    const selected=ref(null);
+    const parsed\u7ed3\u679c=computed(()=>parse\u7ed3\u679c(selected.value));
+    const resultImages=computed(()=>extractImages(parsed\u7ed3\u679c.value));
+    const pretty\u7ed3\u679cJson=computed(()=>selected.value?.result_json?formatJson(selected.value.result_json):'\u6682\u65e0 JSON \u7ed3\u679c');
+    const resultSummary=computed(()=>summarize\u7ed3\u679c(parsed\u7ed3\u679c.value, selected.value));
+    const imageStatusLabel=computed(()=>{
+      if(resultImages.value.length)return `\u5df2\u4e0a\u4f20 ${resultImages.value.length} \u5f20`;
+      if(hasLocalImagePath(parsed\u7ed3\u679c.value))return '\u4ec5\u6709\u677f\u7aef\u672c\u5730\u8def\u5f84';
+      if(selected.value?.result_json)return 'YOLO \u56fe\u7247\u672a\u4e0a\u4f20';
+      return '--';
+    });
+    const imageEmptyMessage=computed(()=>{
+      if(hasLocalImagePath(parsed\u7ed3\u679c.value))return '\u6682\u65e0\u4e91\u7aef\u53ef\u663e\u793a\u56fe\u7247';
+      if(selected.value?.result_json)return 'YOLO \u56fe\u7247\u672a\u4e0a\u4f20';
+      return '\u6682\u65e0\u56fe\u7247';
+    });
+    async function load(){try{const r=await fetch('/api/patrol/tasks?limit=500');const d=await r.json();records.value=d.tasks||d||[];}catch(e){}}
+    function statusText(s){return{completed:'\u5df2\u5b8c\u6210',pending:'\u5f85\u6267\u884c',running:'\u6267\u884c\u4e2d',failed:'\u5931\u8d25'}[s]||s||'--';}
+    function zoneName(id){const z=globalState.zones.find(z=>z.id===id);return z?z.name:(id?`\u56ed\u533a ${id}`:'--');}
+    function displayTaskTime(r){return r?.created_at_local||r?.created_at||'--';}
+    function triggerReason(r){return r?.trigger_reason||'--';}
+    function parse\u7ed3\u679c(r){if(!r||!r.result_json)return null;try{return JSON.parse(r.result_json);}catch(e){return {raw:r.result_json};}}
+    function formatJson(raw){try{return JSON.stringify(JSON.parse(raw),null,2);}catch(e){return raw||'';}}
+    function has\u7ed3\u679c(r){return !!(r&&(r.result_json||r.result));}
+    function hasResultImages(r){return extractImages(parse\u7ed3\u679c(r)).length>0;}
+    function resultButtonText(r){
+      if(!has\u7ed3\u679c(r))return r?.result||'--';
+      if(!r?.result_json)return r?.result||'--';
+      return hasResultImages(r)?'\u67e5\u770b\u7ed3\u679c':'\u67e5\u770b\u7ed3\u679c(\u65e0\u56fe\u7247)';
+    }
+    function normalizeImageUrl(v){
+      if(!v)return'';
+      let raw='';
+      if(typeof v==='string')raw=v;
+      else if(typeof v==='object')raw=v.url||v.path||v.cloud_url||v.image_url||'';
+      raw=String(raw||'').trim();
+      if(!raw)return'';
+      if(raw.startsWith('/uploads/')||raw.startsWith('http://')||raw.startsWith('https://')||raw.startsWith('data:image'))return raw;
+      if(raw.startsWith('uploads/'))return '/' + raw;
+      return '';
+    }
+    function collectImagePaths(data){
+      if(!data)return[];
+      const out=[];
+      const keys=['image_path','draw_image_path','result_image_path','image','image_url'];
+      keys.forEach(k=>{const v=data[k];if(typeof v==='string')out.push(v);});
+      if(Array.isArray(data.results))data.results.forEach(item=>keys.forEach(k=>{const v=item?.[k];if(typeof v==='string')out.push(v);}));
+      return out;
+    }
+    function hasLocalImagePath(data){
+      return collectImagePaths(data).some(v=>{
+        const s=String(v||'').trim();
+        return s && !normalizeImageUrl(s);
+      });
+    }
+    function extractImages(data){
+      if(!data)return[];
+      const out=[];
+      const keys=['cloud_images','images','image_urls','image_url','image','image_path','draw_image','draw_image_path','result_image','result_image_path'];
+      function push(v){const u=normalizeImageUrl(v);if(u&&!out.includes(u))out.push(u);}
+      keys.forEach(k=>{const v=data[k];Array.isArray(v)?v.forEach(push):push(v);});
+      if(Array.isArray(data.results))data.results.forEach(item=>keys.forEach(k=>{const v=item?.[k];Array.isArray(v)?v.forEach(push):push(v);}));
+      return out;
+    }
+    function summarize\u7ed3\u679c(data,r){
+      if(!data)return r?.result||'\u6682\u65e0\u7ed3\u6784\u5316\u7ed3\u679c';
+      const parts=[];
+      ['class','label','type','result','maturity','disease','message'].forEach(k=>{if(data[k])parts.push(`${k}: ${data[k]}`);});
+      ['confidence','conf','score'].forEach(k=>{if(data[k]!==undefined&&data[k]!==null)parts.push(`${k}: ${data[k]}`);});
+      if(Array.isArray(data.detections))parts.push(`detections: ${data.detections.length}`);
+      if(Array.isArray(data.results))parts.push(`results: ${data.results.length}`);
+      return parts.length?parts.join(' | '):(r?.result||'\u5df2\u4fdd\u5b58\u63a8\u7406\u7ed3\u679c');
+    }
+    function open\u7ed3\u679c(r){if(has\u7ed3\u679c(r))selected.value=r;}
+    function close\u7ed3\u679c(){selected.value=null;}
+    async function clearRecords(){
+      if(!records.value.length||clearing.value) return;
+      if(!confirm('\u786e\u8ba4\u6e05\u7a7a\u5168\u90e8\u5de1\u68c0\u8bb0\u5f55\uff1f\u6b64\u64cd\u4f5c\u4e0d\u4f1a\u5220\u9664\u5730\u56fe\u548c\u4fdd\u5b58\u8def\u5f84\u3002')) return;
+      clearing.value=true;
+      try{const r=await fetch('/api/patrol/tasks',{method:'DELETE'});const d=await r.json();if(!d.ok) alert(d.error||'\u6e05\u7a7a\u5931\u8d25');selected.value=null;await load();}
+      catch(e){alert('\u6e05\u7a7a\u5931\u8d25: '+e.message);}
+      finally{clearing.value=false;}
+    }
+    onMounted(load);
+    watch(()=>globalState.patrolRefreshSignal,load);
+    return{records,clearing,selected,parsed\u7ed3\u679c,resultImages,pretty\u7ed3\u679cJson,resultSummary,imageStatusLabel,imageEmptyMessage,statusText,zoneName,displayTaskTime,triggerReason,has\u7ed3\u679c,hasResultImages,resultButtonText,hasLocalImagePath,open\u7ed3\u679c,close\u7ed3\u679c,clearRecords,globalState};
+  }
+};
+
+/* Detection report page */
+const DetectionReportPage={
+  template:`
+  <div class="page-inner">
+    <div class="page-content-wrap">
+      <div class="report-main-card">
+        <div class="report-left">
+          <div class="report-sec-label">病害检测状态</div>
+          <div class="disease-status" :class="hasDiseaseNow?'warn':'ok'">
+            <div class="disease-icon">{{hasDiseaseNow?'⚠️':'✅'}}</div>
+            <div class="disease-text" :style="{color:hasDiseaseNow?'#ff5252':'#00e676'}">{{diseaseText}}</div>
+            <div class="disease-sub">{{diseaseSub}}</div>
+            <div class="disease-time">{{disease\u65f6\u95f4}}</div>
+          </div>
+          <div class="alert-list" style="max-height:220px;margin-top:16px">
+            <div v-for="a in globalState.alerts.slice(0,12)" :key="a.time+a.title"
+                 class="alert-item" :class="a.level==='danger'?'danger':''">
+              <span class="alert-time">{{a.time}}</span>
+              <strong :style="{color:a.level==='danger'?'#ff5252':'#ff9800',margin:'0 6px'}">{{a.title}}</strong>
+              <span>{{a.message}}</span>
+            </div>
+            <div v-if="!globalState.alerts.length" style="color:#555;text-align:center;padding:20px 0;font-size:13px">暂无告警记录</div>
+          </div>
+          <button class="ai-btn" style="margin-top:24px" @click="requestAnalysis" :disabled="aiLoading">
+            {{aiLoading?'⏳ 正在分析...':'⚡ 生成诊断报告'}}
+          </button>
+        </div>
+        <div class="report-right">
+          <svg class="report-svg-bg" viewBox="0 0 400 360" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="200" cy="180" r="140" stroke="#00e676" stroke-width="0.6" stroke-dasharray="4 6"/>
+            <circle cx="200" cy="180" r="100" stroke="#00e676" stroke-width="0.4"/>
+            <circle cx="200" cy="180" r="60"  stroke="#00e676" stroke-width="0.3"/>
+            <circle cx="200" cy="180" r="8"   fill="none" stroke="#00e676" stroke-width="1.2"/>
+            <circle cx="200" cy="180" r="3"   fill="#00e676"/>
+            <path d="M200 80 Q240 120 200 180 Q160 120 200 80Z" stroke="#00e676" stroke-width="0.5" fill="none" opacity="0.6"/>
+            <path d="M200 80 Q260 160 220 200 Q180 180 200 80Z" stroke="#00e676" stroke-width="0.4" fill="none" opacity="0.4"/>
+            <path d="M200 80 Q140 160 180 200 Q220 180 200 80Z" stroke="#00e676" stroke-width="0.4" fill="none" opacity="0.4"/>
+            <line x1="200" y1="180" x2="200" y2="40"  stroke="#00e676" stroke-width="0.5"/>
+            <line x1="200" y1="180" x2="76"  y2="250" stroke="#00e676" stroke-width="0.5"/>
+            <line x1="200" y1="180" x2="324" y2="250" stroke="#00e676" stroke-width="0.5"/>
+            <line x1="200" y1="180" x2="60"  y2="120" stroke="#00e676" stroke-width="0.4"/>
+            <line x1="200" y1="180" x2="340" y2="120" stroke="#00e676" stroke-width="0.4"/>
+            <circle cx="200" cy="40"  r="5" fill="none" stroke="#00e676" stroke-width="1"/><circle cx="200" cy="40"  r="2" fill="#00e676"/>
+            <circle cx="76"  cy="250" r="5" fill="none" stroke="#00e676" stroke-width="1"/><circle cx="76"  cy="250" r="2" fill="#00e676"/>
+            <circle cx="324" cy="250" r="5" fill="none" stroke="#00e676" stroke-width="1"/><circle cx="324" cy="250" r="2" fill="#00e676"/>
+            <circle cx="60"  cy="120" r="4" fill="none" stroke="#00e676" stroke-width="0.8"/>
+            <circle cx="340" cy="120" r="4" fill="none" stroke="#00e676" stroke-width="0.8"/>
+            <line x1="200" y1="40"  x2="76"  y2="250" stroke="#00e676" stroke-width="0.25" stroke-dasharray="3 5"/>
+            <line x1="200" y1="40"  x2="324" y2="250" stroke="#00e676" stroke-width="0.25" stroke-dasharray="3 5"/>
+            <line x1="76"  y1="250" x2="324" y2="250" stroke="#00e676" stroke-width="0.25" stroke-dasharray="3 5"/>
+            <circle cx="138" cy="110" r="2.5" fill="#00e676" opacity="0.6"/>
+            <circle cx="262" cy="110" r="2.5" fill="#00e676" opacity="0.6"/>
+          </svg>
+          <div class="report-right-label">
+            <div class="report-right-tag">IoT 感知网络</div>
+            <div class="report-right-tag">AI 智能诊断</div>
+            <div class="report-right-tag">实时预警</div>
+          </div>
+        </div>
+      </div>
+      <div class="report-ai-card">
+        <div class="ai-report-head">
+          <div class="report-sec-label" style="margin-bottom:0;border-bottom:none;padding-bottom:0">AI 农业专家诊断</div>
+          <div class="ai-meta-row" v-if="aiMeta.timestamp">
+            <span class="ai-meta-chip" :class="aiMeta.mode">{{aiModeText}}</span>
+            <span class="ai-meta-chip">任务 {{aiMeta.inspection_task_id || '-'}}</span>
+            <span class="ai-meta-chip">前 {{aiMeta.sensor_before_count || 0}} / 后 {{aiMeta.sensor_after_count || 0}}</span>
+            <span class="ai-meta-chip">{{aiMeta.timestamp}}</span>
+          </div>
+        </div>
+        <div v-if="!aiText" class="report-ai-empty">
+          <div class="report-ai-icon">🤖</div>
+          <div style="font-size:14px;color:#8b949e;margin-bottom:8px">AI 就绪</div>
+          <div style="font-size:12px;color:#555;margin-bottom:28px;text-align:center;max-width:360px">根据最新巡检JSON、下发前3分钟20条与下发后20条MQTT传感器数据，生成诊断报告</div>
+          <button class="ai-btn" @click="requestAnalysis" :disabled="aiLoading">{{aiLoading?'⏳ 正在分析...':'⚡ 生成诊断报告'}}</button>
+        </div>
+        <div v-else>
+          <div class="ai-content">{{aiText}}</div>
+          <div style="margin-top:12px"><button class="ai-btn" @click="requestAnalysis" :disabled="aiLoading">{{aiLoading?'⏳ 分析中...':'↻ 重新生成'}}</button></div>
+        </div>
+      </div>
+    </div>
+  </div>`,
+  setup(){
+    const aiText=ref(''),aiLoading=ref(false);
+    const aiMeta=reactive({mode:'',model:'',timestamp:'',inspection_task_id:'',sensor_before_count:0,sensor_after_count:0});
+    const aiModeText=computed(()=>aiMeta.mode==='online'?'大模型在线诊断':(aiMeta.mode==='fallback'?'本地诊断':'诊断模式'));
+    globalState.unreadDetections=0;
+    const hasDiseaseNow=computed(()=>globalState.latestDetection&&globalState.latestDetection.disease_count>0);
+    const diseaseText=computed(()=>{const d=globalState.latestDetection;if(d&&d.disease_count>0)return `警告：发现 ${d.result||'未知病害'} ${d.disease_count} 处`;return '环境正常 · 未检测到病害';});
+    const diseaseSub=computed(()=>{const d=globalState.latestDetection;if(d&&d.disease_count>0)return `置信度: ${d.conf||'--'} | 请及时处理`;return '系统持续监测中';});
+    const disease\u65f6\u95f4=computed(()=>{const d=globalState.latestDetection;if(d&&d.time)return `检测时间: ${d.time}`;return '尚无检测记录';});
+    async function requestAnalysis(){
+      aiLoading.value=true;aiText.value='';
+      try{
+        const resp=await fetch('/api/analyze',{method:'POST'});const data=await resp.json();
+        Object.assign(aiMeta,{mode:data.mode||'',model:data.model||'',timestamp:data.timestamp||'',inspection_task_id:data.inspection_task_id||'',sensor_before_count:data.sensor_before_count||0,sensor_after_count:data.sensor_after_count||0});
+        const report=data.report||'分析失败';let i=0;
+        const timer=setInterval(()=>{if(i<report.length){aiText.value+=report[i];i++;}else{clearInterval(timer);aiLoading.value=false;}},20);
+      }catch(e){aiText.value='请求失败: '+e.message;aiLoading.value=false;}
+    }
+    onMounted(async()=>{
+      try{const resp=await fetch('/api/dashboard');const d=await resp.json();
+        if(d.latest_analysis) aiText.value=d.latest_analysis;
+        if(d.detections?.length) globalState.latestDetection=d.detections[0];
+        if(d.alerts) globalState.alerts=d.alerts;
+      }catch(e){}
+    });
+    return{globalState,aiText,aiLoading,aiMeta,aiModeText,hasDiseaseNow,diseaseText,diseaseSub,disease\u65f6\u95f4,requestAnalysis};
+  }
+};
+
+/* 系统设置页 */
+const SettingsPage={
+  template:`
+  <div class="page-inner">
+    <div class="page-content-wrap">
+      <div class="page-title">系统设置</div>
+<div class="settings-section">
+        <div class="settings-title">园区传感器阈值</div>
+        <div class="settings-note">分别配置 A、B 区土壤湿度与光照告警范围。关闭启用后，该区域不再按阈值触发告警。</div>
+        <div class="threshold-grid" v-if="threshold\u56ed\u533as.length">
+          <div class="threshold-card" v-for="zone in threshold\u56ed\u533as" :key="zone.id">
+            <div class="threshold-head">
+              <div>
+                <div class="threshold-name">{{zone.name}}</div>
+                <div class="threshold-device">ESP32: {{zone.esp32_device_id || '未绑定'}}</div>
+              </div>
+              <label class="settings-check"><input type="checkbox" v-model="zone.thresholds.enabled" :true-value="1" :false-value="0">启用</label>
+            </div>
+            <div class="threshold-fields">
+              <div class="threshold-field"><label>土壤湿度下限 (%)</label><input class="settings-input" type="number" step="0.1" v-model.number="zone.thresholds.humi_min"></div>
+              <div class="threshold-field"><label>土壤湿度上限 (%)</label><input class="settings-input" type="number" step="0.1" v-model.number="zone.thresholds.humi_max"></div>
+              <div class="threshold-field"><label>光照下限 (%)</label><input class="settings-input" type="number" step="1" v-model.number="zone.thresholds.light_min"></div>
+              <div class="threshold-field"><label>光照上限 (%)</label><input class="settings-input" type="number" step="1" v-model.number="zone.thresholds.light_max"></div>
+            </div>
+            <div class="threshold-actions">
+              <button class="settings-save" @click="saveThreshold(zone)">保存{{zone.name}}阈值</button>
+              <span class="settings-msg" v-if="thresholdSavedId===zone.id">已保存</span>
+            </div>
+          </div>
+        </div>
+        <div class="empty-state" v-else>暂无园区，请先在园区管理中创建 A、B 园区</div>
+      </div>
+      <div class="settings-section">
+        <div class="settings-title">AI 诊断配置</div>
+        <div class="settings-row"><span class="settings-label">API Key</span><input class="settings-input" type="password" v-model="cfg.ai_api_key" placeholder="sk-..."></div>
+        <div class="settings-row"><span class="settings-label">Base URL</span><input class="settings-input" v-model="cfg.ai_api_base" placeholder="https://api.siliconflow.cn/v1"></div>
+        <div class="settings-row"><span class="settings-label">模型</span><input class="settings-input" v-model="cfg.ai_model" placeholder="deepseek-ai/DeepSeek-V4-Pro"></div>
+        <button class="settings-save" @click="saveSettings">保存配置</button>
+      </div>
+      <div v-if="saved" style="color:#00e676;font-size:13px;margin-top:8px">配置已保存</div>
+    </div>
+  </div>`,
+  setup(){
+    const cfg=reactive({ai_api_key:'',ai_api_base:'https://api.siliconflow.cn/v1',ai_model:'deepseek-ai/DeepSeek-V4-Pro'});
+    const saved=ref(false);
+    const zones=ref([]);
+    const thresholdSavedId=ref(0);
+    const defaultThresholds=()=>({humi_min:50,humi_max:75,light_min:20,light_max:80,enabled:1});
+    const threshold\u56ed\u533as=computed(()=>{
+      const ab=zones.value.filter(z=>{
+        const name=String(z.name||'').trim().toUpperCase();
+        return name.includes('A')||name.includes('B')||['1','2','园区1','园区2'].includes(name)||['esp32_001','esp32_s3_B001'].includes(z.esp32_device_id);
+      });
+      return ab.length ? ab : zones.value.slice(0,2);
+    });
+    async function loadSettings(){try{const r=await fetch('/api/settings');const d=await r.json();cfg.ai_api_key=d.ai_api_key||'';cfg.ai_api_base=d.ai_api_base||cfg.ai_api_base;cfg.ai_model=d.ai_model||cfg.ai_model;}catch(e){}}
+    async function load\u56ed\u533as(){
+      try{
+        const r=await fetch('/api/zones');const d=await r.json();
+        zones.value=(d.zones||[]).map(z=>({...z,thresholds:{...defaultThresholds(),...(z.thresholds||{})}}));
+      }catch(e){zones.value=[];}
+    }
+    async function saveSettings(){
+      try{await fetch('/api/settings',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({ai_api_key:cfg.ai_api_key,ai_api_base:cfg.ai_api_base,ai_model:cfg.ai_model})});saved.value=true;setTimeout(()=>saved.value=false,2500);}catch(e){}
+    }
+    async function saveThreshold(zone){
+      const t=zone.thresholds||defaultThresholds();
+      const payload={humi_min:Number(t.humi_min),humi_max:Number(t.humi_max),light_min:Number(t.light_min),light_max:Number(t.light_max),enabled:Number(t.enabled)?1:0};
+      try{
+        await fetch(`/api/zones/${zone.id}/thresholds`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+        thresholdSavedId.value=zone.id;
+        setTimeout(()=>{if(thresholdSavedId.value===zone.id)thresholdSavedId.value=0;},2200);
+      }catch(e){}
+    }
+    onMounted(()=>{loadSettings();load\u56ed\u533as();});
+    return{cfg,saved,zones,threshold\u56ed\u533as,thresholdSavedId,saveSettings,saveThreshold};
+  }
+};
+/* 路由 */
+const routes=[
+  {path:'/',component:DashboardPage},
+  {path:'/zones',component:\u56ed\u533asPage},
+  {path:'/map',component:MapPage},
+  {path:'/records',component:RecordsPage},
+  {path:'/report',component:DetectionReportPage},
+  {path:'/settings',component:SettingsPage},
+];
+const router=createRouter({history:createWebHashHistory(),routes});
+
+/* App */
+const App={
+  template:`
+  <div style="display:flex;flex-direction:column;height:100vh">
+    <nav class="topnav">
+      <div class="brand">🍓 草莓园区巡检</div>
+      <div class="nav-links">
+        <router-link to="/">控制台</router-link>
+        <router-link to="/zones">园区管理</router-link>
+        <router-link to="/map">地图规划</router-link>
+        <router-link to="/records">巡检记录</router-link>
+        <router-link to="/report">检测报告<span v-if="unreadDetections>0" class="report-badge">{{unreadDetections}}</span></router-link>
+        <router-link to="/settings">系统设置</router-link>
+      </div>
+      <div class="status-bar">
+        <div class="status-item"><div class="status-dot" :class="wsConnected?'on':'off'"></div>云端</div>
+        <div class="status-item"><div class="status-dot" :class="mqttConnected?'on':'off'"></div>MQTT</div>
+        <div class="status-item"><div class="status-dot" :class="robotConnected?'on':'off'"></div>桥接</div>
+        <div class="status-item"><div class="status-dot" :class="videoPusherConnected?'on':'off'"></div>视频</div>
+        <div class="status-item"><div class="status-dot" :class="anySensorOnline?'on':'off'"></div>传感器</div>
+        <div class="clock">{{clock}}</div>
+      </div>
+    </nav>
+    <div style="flex:1;min-height:0;overflow:hidden;display:flex;flex-direction:column">
+      <router-view></router-view>
+    </div>
+  </div>`,
+  setup(){
+    const clock=ref('');
+    const statusTick=ref(Date.now());
+    const wsConnected=computed(()=>globalState.wsConnected);
+    const mqttConnected=computed(()=>globalState.mqttConnected);
+    const robotConnected=computed(()=>globalState.robotConnected);
+    const videoPusherConnected=computed(()=>globalState.videoPusherConnected);
+    const unreadDetections=computed(()=>globalState.unreadDetections);
+    const anySensorOnline=computed(()=>{const now=statusTick.value;return Object.values(globalState.esp32Online).some(t=>now-t<30000);});
+    onMounted(()=>{
+      setInterval(()=>{clock.value=new Date().toLocaleTimeString('zh-CN',{hour12:false});statusTick.value=Date.now();},1000);
+      connectWS();
+      fetch('/api/dashboard').then(r=>r.json()).then(d=>{
+        if(d.latest_sensor) globalState.latestSensor=d.latest_sensor;
+        load\u56ed\u533aSensorData();
+        if(d.mqtt){
+          globalState.mqttConnected=!!d.mqtt.connected;
+          Object.entries(d.mqtt.esp32_devices||{}).forEach(([deviceId,online])=>{
+            globalState.esp32Online[deviceId]=online?Date.now():0;
+          });
+        }
+        if(d.esp32_online){
+          Object.entries(d.esp32_online||{}).forEach(([deviceId,online])=>{
+            globalState.esp32Online[deviceId]=online?Date.now():0;
+          });
+        }
+        if(d.robot_status) globalState.robot\u72b6\u6001=d.robot_status;
+        if(typeof d.robot_connected === 'boolean') globalState.robotConnected=d.robot_connected;
+        if(d.video) globalState.videoPusherConnected=!!d.video.pusher_connected;
+        if(d.alerts) globalState.alerts=d.alerts;
+        if(d.detections?.length) globalState.latestDetection=d.detections[0];
+        if(d.zones) globalState.zones=d.zones;
+      }).catch(()=>{});
+    });
+    return{clock,wsConnected,mqttConnected,robotConnected,videoPusherConnected,anySensorOnline,unreadDetections};
+  }
+};
+
+createApp(App).use(router).mount('#app');
+</script>
+</body>
+</html>
+
+

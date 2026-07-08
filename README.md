@@ -13,6 +13,8 @@
 ├── strawberry_models/           # 草莓成熟度/病害识别模型
 ├── deploy_elf2_maturity/model/  # ELF2 部署用 RKNN 模型
 ├── m3pro_nav_map/               # 导航地图
+├── cloud/                       # 云端服务、数据接口、Web 展示与模拟工具
+├── media/                       # 比赛演示视频（Git LFS 管理）
 ├── inspect_region_bridge.py     # 云端巡检桥接脚本
 ├── start_agent.sh               # 32 控制板代理启动脚本
 └── SOURCE_MANIFEST.txt          # 打包来源清单
@@ -25,6 +27,15 @@
 - Yahboom M3Pro 移动底盘与机械臂
 - Orbbec Dabai DCW2 相机
 - `ROS_DOMAIN_ID=30`
+
+
+## 云端服务
+
+云端代码位于 `cloud/`，包含 FastAPI 服务、Web 展示页面、巡检结果处理、AI 诊断接口、地图接口、WebSocket 通信、MQTT 通信和模拟工具。公开版本已移除运行数据库、上传图片缓存、历史备份文件和默认设备密码；AI API Key、Jetson 密码等敏感配置请通过环境变量或页面设置填写。
+
+## 演示视频
+
+比赛演示视频位于 `media/全国嵌入式芯片与系统设计竞赛.mp4`。该文件超过 GitHub 普通单文件限制，仓库使用 Git LFS 管理 `.mp4` 文件。
 
 ## 色块抓取
 
@@ -162,5 +173,7 @@ ros2 launch slam_mapping save_map.launch.py map_path:=/root/m3pro_nav_map/yahboo
 ## 开源说明
 
 本项目代码以 MIT License 开源。仓库中包含的第三方 SDK、设备驱动、模型权重或示例资源，其版权和许可证归原作者或供应商所有。
+
+
 
 

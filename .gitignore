@@ -41,3 +41,14 @@ Thumbs.db
 *.pem
 *.p12
 *.pfx
+
+# Cloud runtime data
+cloud/cloud.db
+cloud/*.db
+cloud/*.sqlite
+cloud/*.sqlite3
+cloud/uploads/
+cloud/.claude/
+cloud/.deps_ok
+cloud/*.bak*
+cloud/static/*.bak*
